@@ -8,251 +8,206 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red: #C0392B;
-  --red-dark: #96281B;
-  --red-light: #fdf0ee;
-  --blue: #1A3A5C;
-  --blue-mid: #2471A3;
-  --blue-light: #e8f4fc;
-  --white: #FFFFFF;
-  --off: #F7F8FA;
-  --border: #E2E6EA;
-  --text: #1C2833;
-  --muted: #7F8C8D;
-  --green: #1E8449;
-  --green-light: #eafaf1;
-  --amber: #B7770D;
-  --amber-light: #fef9e7;
-  --nav: 240px;
-  --top: 56px;
+  --red:#C0392B;--red-dark:#96281B;--red-light:#fdf0ee;
+  --blue:#1A3A5C;--blue-mid:#2471A3;--blue-light:#e8f4fc;
+  --white:#fff;--off:#F7F8FA;--border:#E2E6EA;
+  --text:#1C2833;--muted:#7F8C8D;
+  --green:#1E8449;--green-light:#eafaf1;
+  --amber:#B7770D;--amber-light:#fef9e7;
+  --nav:240px;--top:56px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.topbar{height:var(--top);background:var(--blue);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;border-bottom:2px solid var(--red);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;color:white;letter-spacing:2px;line-height:1;}
+.logo span{color:var(--red);}
+.topbar-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,0.2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(46,204,113,0.2);}50%{box-shadow:0 0 0 6px rgba(46,204,113,0.1);}}
+.topbar-info{font-size:12px;color:rgba(255,255,255,0.6);}
+.topbar-avatar{width:32px;height:32px;border-radius:8px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:white;letter-spacing:1px;}
+.app{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:var(--nav);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.nav-section{padding:16px 12px 6px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:500;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;border-radius:8px;margin:1px 8px;transition:all 0.15s;position:relative;}
+.nav-item:hover{background:var(--off);color:var(--text);}
+.nav-item.active{background:var(--blue-light);color:var(--blue);}
+.nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--red);border-radius:0 2px 2px 0;}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;}
+.nav-badge.green{background:var(--green);}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
+.sidebar-footer-text{font-size:11px;color:var(--muted);line-height:1.6;}
+.main{flex:1;overflow-y:auto;padding:24px;}
+.page{display:none;}
+.page.active{display:block;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--blue);line-height:1;}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.btn-primary{background:var(--red);color:white;}
+.btn-primary:hover{background:var(--red-dark);}
+.btn-secondary{background:var(--blue);color:white;}
+.btn-outline{background:white;color:var(--blue);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--blue);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-danger{background:#fdf0ee;color:var(--red);border:1.5px solid var(--red-light);}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:white;border:1px solid var(--border);border-radius:12px;padding:16px 18px;border-top:3px solid var(--red);}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;}
+.kpi-value{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--blue);letter-spacing:1px;line-height:1.1;margin:4px 0 2px;}
+.kpi-change{font-size:11px;color:var(--green);font-weight:500;}
+.kpi-change.down{color:var(--red);}
+.kpi-change.neutral{color:var(--muted);}
+.card{background:white;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.card-title{font-size:13px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pill-red{background:#fdf0ee;color:var(--red-dark);}
+.pill-blue{background:var(--blue-light);color:var(--blue);}
+.pill-green{background:var(--green-light);color:var(--green);}
+.pill-amber{background:var(--amber-light);color:var(--amber);}
+.pill-gray{background:var(--off);color:var(--muted);}
+.job-list{display:flex;flex-direction:column;gap:6px;}
+.job-row{display:grid;grid-template-columns:38px 1fr auto auto auto;align-items:center;gap:12px;padding:10px 12px;background:var(--off);border-radius:8px;border-left:3px solid transparent;transition:all 0.15s;cursor:pointer;}
+.job-row:hover{background:#eef2f7;transform:translateX(2px);}
+.job-row.urgent{border-left-color:var(--red);}
+.job-row.scheduled{border-left-color:var(--blue-mid);}
+.job-row.complete{border-left-color:var(--green);}
+.job-row.enroute{border-left-color:var(--amber);}
+.job-avatar{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;color:white;letter-spacing:1px;flex-shrink:0;}
+.job-name{font-size:13px;font-weight:600;color:var(--text);}
+.job-detail{font-size:11px;color:var(--muted);margin-top:1px;}
+.job-time{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--off);color:var(--muted);padding:9px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--off);cursor:pointer;}
+.td-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);font-weight:500;}
+.td-amount{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--blue);letter-spacing:1px;}
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.tech-card{background:var(--off);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.tech-avatar-lg{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:white;margin-bottom:10px;}
+.tech-name{font-size:13px;font-weight:600;color:var(--text);}
+.tech-status{font-size:11px;color:var(--muted);margin-top:2px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-label{width:110px;font-size:12px;color:var(--muted);text-align:right;flex-shrink:0;}
+.bar-track{flex:1;background:var(--off);border-radius:4px;height:20px;overflow:hidden;border:1px solid var(--border);}
+.bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:white;font-family:'DM Mono',monospace;}
+.bar-val{width:50px;font-size:12px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;}
+.ai-panel{background:linear-gradient(135deg,var(--blue) 0%,#0d2137 100%);border-radius:12px;padding:20px 24px;color:white;margin-bottom:16px;position:relative;overflow:hidden;}
+.ai-panel::before{content:'AI';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Bebas Neue',sans-serif;font-size:80px;color:rgba(255,255,255,0.05);letter-spacing:4px;pointer-events:none;}
+.ai-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:2px;}
+.ai-sub{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:16px;}
+.ai-stats{display:flex;gap:28px;flex-wrap:wrap;}
+.ai-stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;}
+.ai-stat-label{font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;}
+.call-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.call-row:last-child{border-bottom:none;}
+.call-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.call-info{flex:1;min-width:0;}
+.call-name{font-size:13px;font-weight:600;color:var(--text);}
+.call-detail{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.call-meta{text-align:right;flex-shrink:0;}
+.call-time{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.call-outcome{font-size:11px;font-weight:700;}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:13px;gap:8px;}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:40px;color:var(--muted);}
+.empty-icon{font-size:32px;margin-bottom:8px;}
+.empty-text{font-size:13px;}
 
-/* ── TOP BAR ── */
-.topbar {
-  height: var(--top); background: var(--blue); display: flex; align-items: center;
-  justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 100;
-  border-bottom: 2px solid var(--red);
+/* ── JOB PANEL ── */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.panel-overlay.open{opacity:1;pointer-events:all;}
+.job-panel{position:fixed;right:0;top:0;bottom:0;width:440px;max-width:100vw;background:white;z-index:201;transform:translateX(100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,0.15);}
+.job-panel.open{transform:translateX(0);}
+.panel-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--blue);}
+.panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.panel-close:hover{background:var(--off);}
+.panel-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.panel-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.panel-section{margin-bottom:22px;}
+.panel-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.panel-field{margin-bottom:14px;}
+.panel-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:5px;}
+.panel-value{font-size:14px;color:var(--text);font-weight:500;}
+.panel-select,.panel-input,.panel-textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;transition:border-color 0.15s;}
+.panel-select:focus,.panel-input:focus,.panel-textarea:focus{border-color:var(--blue);}
+.panel-textarea{resize:vertical;min-height:80px;}
+.status-buttons{display:flex;flex-wrap:wrap;gap:6px;}
+.status-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--muted);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.status-btn:hover{border-color:var(--blue-mid);color:var(--blue-mid);}
+.status-btn.sel-scheduled{background:var(--blue-light);color:var(--blue);border-color:var(--blue);}
+.status-btn.sel-dispatched,.status-btn.sel-en_route,.status-btn.sel-on_site{background:var(--amber-light);color:var(--amber);border-color:var(--amber);}
+.status-btn.sel-complete{background:var(--green-light);color:var(--green);border-color:var(--green);}
+.status-btn.sel-cancelled{background:var(--off);color:var(--muted);border-color:var(--muted);}
+.save-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--blue);color:white;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;transition:transform 0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.save-toast.show{transform:translateX(-50%) translateY(0);}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:6px;vertical-align:middle;}
+.mobile-nav{display:none;background:white;border-top:1px solid var(--border);padding:8px 0 4px;}
+.mobile-nav-items{display:flex;justify-content:space-around;}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;border-radius:8px;}
+.mobile-nav-item.active{color:var(--blue);}
+.mobile-nav-icon{font-size:18px;}
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .mobile-nav{display:block;}
+  .app{flex-direction:column;}
+  .main{padding:16px;}
+  body{overflow:auto;}
+  .app{overflow:auto;}
+  .job-row{grid-template-columns:38px 1fr auto;}
+  .job-row .job-time{display:none;}
+  .job-panel{width:100vw;}
 }
-.topbar-left { display: flex; align-items: center; gap: 12px; }
-.logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: white; letter-spacing: 2px; line-height: 1; }
-.logo span { color: var(--red); }
-.topbar-tag { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,0.2); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(46,204,113,0.2); } 50% { box-shadow: 0 0 0 6px rgba(46,204,113,0.1); } }
-.topbar-info { font-size: 12px; color: rgba(255,255,255,0.6); }
-.topbar-avatar { width: 32px; height: 32px; border-radius: 8px; background: var(--red); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: white; letter-spacing: 1px; cursor: pointer; }
-
-/* ── LAYOUT ── */
-.app { display: flex; flex: 1; overflow: hidden; }
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: var(--nav); background: var(--white); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
-}
-.nav-section { padding: 16px 12px 6px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 500; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer;
-  color: var(--muted); font-size: 13px; font-weight: 500; border-radius: 8px; margin: 1px 8px;
-  transition: all 0.15s; position: relative;
-}
-.nav-item:hover { background: var(--off); color: var(--text); }
-.nav-item.active { background: var(--blue-light); color: var(--blue); }
-.nav-item.active::before { content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: var(--red); border-radius: 0 2px 2px 0; }
-.nav-icon { font-size: 15px; width: 20px; text-align: center; }
-.nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; font-family: 'DM Mono', monospace; }
-.nav-badge.green { background: var(--green); }
-.sidebar-footer { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
-.sidebar-footer-text { font-size: 11px; color: var(--muted); line-height: 1.6; }
-
-/* ── MAIN ── */
-.main { flex: 1; overflow-y: auto; padding: 24px; }
-.page { display: none; }
-.page.active { display: block; }
-
-/* ── PAGE HEADER ── */
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.page-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--blue); line-height: 1; }
-.page-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-.btn-primary { background: var(--red); color: white; }
-.btn-primary:hover { background: var(--red-dark); }
-.btn-secondary { background: var(--blue); color: white; }
-.btn-outline { background: white; color: var(--blue); border: 1.5px solid var(--border); }
-.btn-outline:hover { border-color: var(--blue); }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-
-/* ── KPI GRID ── */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
-.kpi { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; border-top: 3px solid var(--red); }
-.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 600; }
-.kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--blue); letter-spacing: 1px; line-height: 1.1; margin: 4px 0 2px; }
-.kpi-change { font-size: 11px; color: var(--green); font-weight: 500; }
-.kpi-change.down { color: var(--red); }
-.kpi-change.neutral { color: var(--muted); }
-
-/* ── CARD ── */
-.card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.card-title { font-size: 13px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; }
-
-/* ── STATUS PILLS ── */
-.pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-.pill-red { background: #fdf0ee; color: var(--red-dark); }
-.pill-blue { background: var(--blue-light); color: var(--blue); }
-.pill-green { background: var(--green-light); color: var(--green); }
-.pill-amber { background: var(--amber-light); color: var(--amber); }
-.pill-gray { background: var(--off); color: var(--muted); }
-.pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
-/* ── JOBS LIST ── */
-.job-list { display: flex; flex-direction: column; gap: 6px; }
-.job-row {
-  display: grid; grid-template-columns: 38px 1fr auto auto auto; align-items: center;
-  gap: 12px; padding: 10px 12px; background: var(--off); border-radius: 8px;
-  border-left: 3px solid transparent; transition: all 0.15s; cursor: pointer;
-}
-.job-row:hover { background: #f0f4f8; }
-.job-row.urgent { border-left-color: var(--red); }
-.job-row.scheduled { border-left-color: var(--blue-mid); }
-.job-row.complete { border-left-color: var(--green); }
-.job-row.enroute { border-left-color: var(--amber); }
-.job-avatar { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: white; letter-spacing: 1px; flex-shrink: 0; }
-.job-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.job-detail { font-size: 11px; color: var(--muted); margin-top: 1px; }
-.job-time { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; }
-
-/* ── TWO COL ── */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-
-/* ── TABLE ── */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: var(--off); color: var(--muted); padding: 9px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
-td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--off); }
-.td-id { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--blue); font-weight: 500; }
-.td-amount { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--blue); letter-spacing: 1px; }
-
-/* ── TECH CARDS ── */
-.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-.tech-card { background: var(--off); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-.tech-avatar-lg { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: white; margin-bottom: 10px; }
-.tech-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.tech-status { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.tech-stat { font-size: 11px; color: var(--blue); font-weight: 600; margin-top: 6px; }
-
-/* ── REPORTS BARS ── */
-.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.bar-label { width: 110px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
-.bar-track { flex: 1; background: var(--off); border-radius: 4px; height: 20px; overflow: hidden; border: 1px solid var(--border); }
-.bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; color: white; font-family: 'DM Mono', monospace; }
-.bar-val { width: 50px; font-size: 12px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
-
-/* ── AI PANEL ── */
-.ai-panel { background: linear-gradient(135deg, var(--blue) 0%, #0d2137 100%); border-radius: 12px; padding: 20px 24px; color: white; margin-bottom: 16px; position: relative; overflow: hidden; }
-.ai-panel::before { content: 'AI'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-family: 'Bebas Neue', sans-serif; font-size: 80px; color: rgba(255,255,255,0.05); letter-spacing: 4px; pointer-events: none; }
-.ai-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; margin-bottom: 2px; }
-.ai-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
-.ai-stats { display: flex; gap: 28px; flex-wrap: wrap; }
-.ai-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; }
-.ai-stat-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1.5px; }
-
-/* ── CALL LOG ── */
-.call-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.call-row:last-child { border-bottom: none; }
-.call-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-.call-info { flex: 1; min-width: 0; }
-.call-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.call-detail { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.call-meta { text-align: right; flex-shrink: 0; }
-.call-time { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-.call-outcome { font-size: 11px; font-weight: 700; }
-
-/* ── LOADING ── */
-.loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--muted); font-size: 13px; gap: 8px; }
-.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── EMPTY STATE ── */
-.empty { text-align: center; padding: 40px; color: var(--muted); }
-.empty-icon { font-size: 32px; margin-bottom: 8px; }
-.empty-text { font-size: 13px; }
-
-/* ── MOBILE NAV ── */
-.mobile-nav { display: none; background: white; border-top: 1px solid var(--border); padding: 8px 0 4px; }
-.mobile-nav-items { display: flex; justify-content: space-around; }
-.mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 12px; cursor: pointer; color: var(--muted); font-size: 10px; font-weight: 500; border-radius: 8px; }
-.mobile-nav-item.active { color: var(--blue); }
-.mobile-nav-icon { font-size: 18px; }
-
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .mobile-nav { display: block; }
-  .app { flex-direction: column; }
-  .main { padding: 16px; }
-  body { overflow: auto; }
-  .app { overflow: auto; }
-  .job-row { grid-template-columns: 38px 1fr auto; }
-  .job-row .job-time, .job-row .btn-sm:last-child { display: none; }
-}
-
-/* ── CONNECT BANNER ── */
-.connect-banner { background: var(--amber-light); border: 1px solid #f0c040; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: var(--amber); display: flex; align-items: center; gap: 8px; }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
 <div class="topbar">
-  <div class="topbar-left">
-    <div>
-      <div class="logo">Charlie's <span>Plumbing</span></div>
-      <div class="topbar-tag">Operations Platform</div>
-    </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div><div class="logo">Charlie's <span>Plumbing</span></div><div class="topbar-tag">Operations Platform</div></div>
   </div>
   <div class="topbar-right">
     <div class="live-dot"></div>
-    <div class="topbar-info" id="topbar-info">Salt Lake City, UT</div>
+    <div class="topbar-info">Salt Lake City, UT</div>
     <div class="topbar-avatar">CP</div>
   </div>
 </div>
 
 <div class="app">
-
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="nav-section">Operations</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">◼</span> Dashboard</div>
   <div class="nav-item" onclick="nav('dispatch',this)"><span class="nav-icon">📋</span> Dispatch <span class="nav-badge" id="badge-dispatch">—</span></div>
   <div class="nav-item" onclick="nav('schedule',this)"><span class="nav-icon">📅</span> Schedule</div>
   <div class="nav-item" onclick="nav('customers',this)"><span class="nav-icon">👥</span> Customers</div>
-
   <div class="nav-section">Finance</div>
   <div class="nav-item" onclick="nav('invoices',this)"><span class="nav-icon">💵</span> Invoices</div>
-
   <div class="nav-section">Intelligence</div>
   <div class="nav-item" onclick="nav('calls',this)"><span class="nav-icon">📞</span> AI Calls <span class="nav-badge green" id="badge-calls">—</span></div>
   <div class="nav-item" onclick="nav('reports',this)"><span class="nav-icon">📊</span> Reports</div>
-
   <div class="sidebar-footer">
     <div class="sidebar-footer-text">Charlie's Plumbing & Drain<br>Salt Lake City, Utah<br><br><span id="last-updated" style="color:var(--muted)">Loading...</span></div>
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<div class="main" id="main">
+<div class="main">
 
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
     <div class="page-header">
-      <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date">Loading...</div></div>
-      <button class="btn btn-primary" onclick="nav('dispatch',document.querySelector('[onclick*=dispatch]'))">+ New Job</button>
+      <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date"></div></div>
+      <button class="btn btn-primary" onclick="openNewJobPanel()">+ New Job</button>
     </div>
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-label">Jobs Today</div><div class="kpi-value" id="kpi-today">—</div><div class="kpi-change neutral" id="kpi-today-sub">loading</div></div>
@@ -264,7 +219,7 @@ tr:hover td { background: var(--off); }
     <div class="two-col">
       <div class="card">
         <div class="card-header"><span class="card-title">Recent Jobs</span><button class="btn btn-outline btn-sm" onclick="nav('dispatch',document.querySelector('[onclick*=dispatch]'))">View All</button></div>
-        <div class="job-list" id="dash-jobs"><div class="loading"><div class="spinner"></div> Loading jobs...</div></div>
+        <div class="job-list" id="dash-jobs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Technicians</span></div>
@@ -277,7 +232,7 @@ tr:hover td { background: var(--off); }
   <div class="page" id="page-dispatch">
     <div class="page-header">
       <div><div class="page-title">Dispatch Board</div><div class="page-sub" id="dispatch-sub">Loading...</div></div>
-      <button class="btn btn-primary">+ New Job</button>
+      <button class="btn btn-primary" onclick="openNewJobPanel()">+ New Job</button>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Active & Scheduled Jobs</span><button class="btn btn-outline btn-sm" onclick="loadDispatch()">↻ Refresh</button></div>
@@ -287,9 +242,7 @@ tr:hover td { background: var(--off); }
 
   <!-- SCHEDULE -->
   <div class="page" id="page-schedule">
-    <div class="page-header">
-      <div><div class="page-title">Schedule</div><div class="page-sub">Upcoming appointments</div></div>
-    </div>
+    <div class="page-header"><div><div class="page-title">Schedule</div><div class="page-sub">Upcoming availability slots</div></div></div>
     <div class="card">
       <div class="card-header"><span class="card-title">This Week</span></div>
       <div id="schedule-content"><div class="loading"><div class="spinner"></div> Loading...</div></div>
@@ -300,15 +253,12 @@ tr:hover td { background: var(--off); }
   <div class="page" id="page-customers">
     <div class="page-header">
       <div><div class="page-title">Customers</div><div class="page-sub" id="customers-sub">Loading...</div></div>
-      <button class="btn btn-primary">+ Add Customer</button>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">All Customers</span></div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Jobs</th><th>Added</th></tr></thead>
-          <tbody id="customers-table"><tr><td colspan="5"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody>
-        </table>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Added</th></tr></thead>
+        <tbody id="customers-table"><tr><td colspan="4"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody></table>
       </div>
     </div>
   </div>
@@ -317,24 +267,19 @@ tr:hover td { background: var(--off); }
   <div class="page" id="page-invoices">
     <div class="page-header">
       <div><div class="page-title">Invoices</div><div class="page-sub" id="invoices-sub">Loading...</div></div>
-      <button class="btn btn-primary">+ New Invoice</button>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">All Jobs</span></div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>Job</th><th>Customer</th><th>Service</th><th>Status</th><th>Amount</th><th>Date</th></tr></thead>
-          <tbody id="invoices-table"><tr><td colspan="6"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody>
-        </table>
+        <table><thead><tr><th>Job</th><th>Customer</th><th>Service</th><th>Status</th><th>Amount</th><th>Paid</th><th>Date</th></tr></thead>
+        <tbody id="invoices-table"><tr><td colspan="7"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody></table>
       </div>
     </div>
   </div>
 
   <!-- AI CALLS -->
   <div class="page" id="page-calls">
-    <div class="page-header">
-      <div><div class="page-title">AI Call Center</div><div class="page-sub">Powered by Aria · Claude · ElevenLabs</div></div>
-    </div>
+    <div class="page-header"><div><div class="page-title">AI Call Center</div><div class="page-sub">Powered by Aria · Claude · ElevenLabs · (801) 406-8585</div></div></div>
     <div class="ai-panel">
       <div class="ai-title">Aria — AI Receptionist</div>
       <div class="ai-sub">Answers 24/7 · Books jobs · Logs every call</div>
@@ -342,7 +287,6 @@ tr:hover td { background: var(--off); }
         <div><div class="ai-stat-val" id="ai-total">—</div><div class="ai-stat-label">Total Calls</div></div>
         <div><div class="ai-stat-val" id="ai-booked">—</div><div class="ai-stat-label">Jobs Booked</div></div>
         <div><div class="ai-stat-val" id="ai-rate">—</div><div class="ai-stat-label">Book Rate</div></div>
-        <div><div class="ai-stat-val">(801) 406-8585</div><div class="ai-stat-label">Phone Number</div></div>
       </div>
     </div>
     <div class="card">
@@ -353,9 +297,7 @@ tr:hover td { background: var(--off); }
 
   <!-- REPORTS -->
   <div class="page" id="page-reports">
-    <div class="page-header">
-      <div><div class="page-title">Reports</div><div class="page-sub" id="reports-sub">Loading...</div></div>
-    </div>
+    <div class="page-header"><div><div class="page-title">Reports</div><div class="page-sub" id="reports-sub"></div></div></div>
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-label">Total Jobs</div><div class="kpi-value" id="rep-jobs">—</div><div class="kpi-change neutral">all time</div></div>
       <div class="kpi"><div class="kpi-label">Customers</div><div class="kpi-value" id="rep-customers">—</div><div class="kpi-change neutral">total</div></div>
@@ -363,14 +305,8 @@ tr:hover td { background: var(--off); }
       <div class="kpi"><div class="kpi-label">Completed</div><div class="kpi-value" id="rep-complete">—</div><div class="kpi-change">jobs done</div></div>
     </div>
     <div class="two-col">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Jobs by Status</span></div>
-        <div id="reports-status"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Jobs by Source</span></div>
-        <div id="reports-source"></div>
-      </div>
+      <div class="card"><div class="card-header"><span class="card-title">Jobs by Status</span></div><div id="reports-status"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">Jobs by Source</span></div><div id="reports-source"></div></div>
     </div>
   </div>
 
@@ -388,311 +324,433 @@ tr:hover td { background: var(--off); }
   </div>
 </div>
 
+<!-- JOB DETAIL PANEL -->
+<div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="job-panel" id="job-panel">
+  <div class="panel-header">
+    <div class="panel-title" id="panel-title">Job Details</div>
+    <button class="panel-close" onclick="closePanel()">×</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+  <div class="panel-footer">
+    <button class="btn btn-primary" onclick="saveJob()" id="save-btn">Save Changes</button>
+    <button class="btn btn-outline" onclick="closePanel()">Cancel</button>
+    <span id="save-indicator" style="font-size:12px;color:var(--green);font-weight:600;opacity:0;margin-left:auto;transition:opacity 0.3s">✓ Saved</span>
+  </div>
+</div>
+
+<!-- SAVE TOAST -->
+<div class="save-toast" id="save-toast">✓ Changes saved</div>
+
 <script>
-// ── CONFIG — replace with your actual Supabase credentials ──────────────────
 const SUPABASE_URL = 'https://bfnwuurnzvncfumsnnds.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8aFV9Gj8xlDChJuXuENLHA_stiqieCr';
-
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── COLORS for avatars ───────────────────────────────────────────────────────
 const COLORS = ['#C0392B','#1A3A5C','#2471A3','#27AE60','#8E44AD','#E67E22','#16A085'];
-function colorFor(str) { let h=0; for(let c of (str||'')) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[h]; }
-function initials(name) { return (name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function colorFor(s){let h=0;for(let c of(s||''))h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function initials(n){return(n||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function fmt(d){if(!d)return'—';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
+function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
-// ── STATUS HELPERS ───────────────────────────────────────────────────────────
-function statusPill(status) {
-  const map = {
-    scheduled: ['pill-blue','Scheduled'],
-    dispatched: ['pill-amber','Dispatched'],
-    en_route: ['pill-amber','En Route'],
-    on_site: ['pill-amber','On Site'],
-    complete: ['pill-green','Complete'],
-    cancelled: ['pill-gray','Cancelled'],
-    emergency_dispatch: ['pill-red','Emergency'],
-  };
-  const [cls, label] = map[status] || ['pill-gray', status];
-  return `<span class="pill ${cls}">${label}</span>`;
+function statusPill(s){
+  const m={scheduled:['pill-blue','Scheduled'],dispatched:['pill-amber','Dispatched'],en_route:['pill-amber','En Route'],on_site:['pill-amber','On Site'],complete:['pill-green','Complete'],cancelled:['pill-gray','Cancelled'],emergency_dispatch:['pill-red','Emergency']};
+  const[cls,label]=m[s]||['pill-gray',s];
+  return`<span class="pill ${cls}">${label}</span>`;
+}
+function urgClass(j){
+  if(j.status==='complete')return'complete';
+  if(j.urgency==='emergency'||j.urgency==='urgent')return'urgent';
+  if(j.status==='en_route'||j.status==='on_site')return'enroute';
+  return'scheduled';
 }
 
-function urgencyClass(urgency) {
-  if (urgency === 'emergency') return 'urgent';
-  if (urgency === 'urgent') return 'urgent';
-  return 'scheduled';
-}
-
-function fmt(dateStr) {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
-
-function fmtDate(dateStr) {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-// ── NAVIGATION ───────────────────────────────────────────────────────────────
-let currentPage = 'dashboard';
-function nav(page, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page)?.classList.add('active');
-  if (el) el.classList.add('active');
-  currentPage = page;
+// ── NAV ──────────────────────────────────────────────────────────────────────
+let currentPage='dashboard';
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.mobile-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  if(el)el.classList.add('active');
+  currentPage=page;
   loadPage(page);
 }
+function loadPage(p){
+  if(p==='dashboard')loadDashboard();
+  if(p==='dispatch')loadDispatch();
+  if(p==='schedule')loadSchedule();
+  if(p==='customers')loadCustomers();
+  if(p==='invoices')loadInvoices();
+  if(p==='calls')loadCalls();
+  if(p==='reports')loadReports();
+}
 
-function loadPage(page) {
-  if (page === 'dashboard') loadDashboard();
-  if (page === 'dispatch') loadDispatch();
-  if (page === 'schedule') loadSchedule();
-  if (page === 'customers') loadCustomers();
-  if (page === 'invoices') loadInvoices();
-  if (page === 'calls') loadCalls();
-  if (page === 'reports') loadReports();
+// ── JOB PANEL ────────────────────────────────────────────────────────────────
+let currentJob = null;
+let allTechs = [];
+
+async function openJobPanel(jobId) {
+  const { data: job } = await db.from('jobs').select('*, customers(name,phone,address), technicians(name)').eq('id', jobId).single();
+  if (!job) return;
+  currentJob = job;
+
+  const { data: techs } = await db.from('technicians').select('*');
+  allTechs = techs || [];
+
+  const statuses = ['scheduled','dispatched','en_route','on_site','complete','cancelled'];
+
+  document.getElementById('panel-title').textContent = job.customers?.name || 'Job Details';
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-section">
+      <div class="panel-section-title">Status ${job.source==='ai_voice'?'<span class="ai-badge">🤖 AI Booked</span>':''}</div>
+      <div class="status-buttons">
+        ${statuses.map(s=>`<button class="status-btn ${job.status===s?'sel-'+s:''}" onclick="selectStatus('${s}',this)">${s.replace('_',' ')}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Customer</div>
+      <div class="panel-field"><div class="panel-label">Name</div><div class="panel-value">${job.customers?.name||'—'}</div></div>
+      <div class="panel-field"><div class="panel-label">Phone</div><div class="panel-value">${job.customers?.phone||'—'}</div></div>
+      <div class="panel-field"><div class="panel-label">Address</div><div class="panel-value">${job.address||job.customers?.address||'—'}</div></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Job Details</div>
+      <div class="panel-field">
+        <div class="panel-label">Service Type</div>
+        <input class="panel-input" id="field-service" value="${job.service_type||''}" placeholder="e.g. Drain cleaning">
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Scheduled Time</div>
+        <input class="panel-input" id="field-scheduled" type="datetime-local" value="${job.scheduled_at?new Date(job.scheduled_at).toISOString().slice(0,16):''}">
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Assign Technician</div>
+        <select class="panel-select" id="field-tech">
+          <option value="">— Unassigned —</option>
+          ${allTechs.map(t=>`<option value="${t.id}" ${job.technician_id===t.id?'selected':''}>${t.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Urgency</div>
+        <select class="panel-select" id="field-urgency">
+          <option value="normal" ${job.urgency==='normal'?'selected':''}>Normal</option>
+          <option value="urgent" ${job.urgency==='urgent'?'selected':''}>Urgent</option>
+          <option value="emergency" ${job.urgency==='emergency'?'selected':''}>Emergency</option>
+        </select>
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Notes</div>
+        <textarea class="panel-textarea" id="field-notes">${job.notes||''}</textarea>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Invoice</div>
+      <div class="panel-field">
+        <div class="panel-label">Amount ($)</div>
+        <input class="panel-input" id="field-amount" type="number" value="${job.invoice_amount||''}" placeholder="0.00">
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Payment Status</div>
+        <select class="panel-select" id="field-paid">
+          <option value="false" ${!job.invoice_paid?'selected':''}>Unpaid</option>
+          <option value="true" ${job.invoice_paid?'selected':''}>Paid ✓</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Info</div>
+      <div class="panel-field"><div class="panel-label">Job ID</div><div class="panel-value" style="font-family:'DM Mono',monospace;font-size:12px">${job.id}</div></div>
+      <div class="panel-field"><div class="panel-label">Created</div><div class="panel-value">${fmt(job.created_at)}</div></div>
+      <div class="panel-field"><div class="panel-label">Source</div><div class="panel-value">${job.source||'phone'}</div></div>
+    </div>
+  `;
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('job-panel').classList.add('open');
+}
+
+function selectStatus(status, btn) {
+  document.querySelectorAll('.status-btn').forEach(b => { b.className = 'status-btn'; });
+  btn.className = `status-btn sel-${status}`;
+  if (currentJob) currentJob._selectedStatus = status;
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('job-panel').classList.remove('open');
+  currentJob = null;
+}
+
+async function saveJob() {
+  if (!currentJob) return;
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  const updates = {
+    status: currentJob._selectedStatus || currentJob.status,
+    service_type: document.getElementById('field-service')?.value,
+    scheduled_at: document.getElementById('field-scheduled')?.value || null,
+    technician_id: document.getElementById('field-tech')?.value || null,
+    urgency: document.getElementById('field-urgency')?.value,
+    notes: document.getElementById('field-notes')?.value,
+    invoice_amount: parseFloat(document.getElementById('field-amount')?.value) || null,
+    invoice_paid: document.getElementById('field-paid')?.value === 'true',
+  };
+
+  const { error } = await db.from('jobs').update(updates).eq('id', currentJob.id);
+
+  btn.textContent = 'Save Changes';
+  btn.disabled = false;
+
+  if (!error) {
+    showToast('✓ Job updated successfully');
+    closePanel();
+    loadPage(currentPage);
+  } else {
+    showToast('⚠ Error saving — check console');
+    console.error(error);
+  }
+}
+
+function openNewJobPanel() {
+  currentJob = { id: null, _isNew: true };
+  document.getElementById('panel-title').textContent = 'New Job';
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-section">
+      <div class="panel-section-title">Customer</div>
+      <div class="panel-field"><div class="panel-label">Customer Name *</div><input class="panel-input" id="field-name" placeholder="Full name"></div>
+      <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="field-phone" placeholder="(801) 555-0100"></div>
+      <div class="panel-field"><div class="panel-label">Address *</div><input class="panel-input" id="field-address" placeholder="123 Main St, Salt Lake City, UT"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Job Details</div>
+      <div class="panel-field"><div class="panel-label">Service Type *</div><input class="panel-input" id="field-service" placeholder="e.g. Drain cleaning, Water heater"></div>
+      <div class="panel-field"><div class="panel-label">Scheduled Time</div><input class="panel-input" id="field-scheduled" type="datetime-local"></div>
+      <div class="panel-field">
+        <div class="panel-label">Assign Technician</div>
+        <select class="panel-select" id="field-tech">
+          <option value="">— Unassigned —</option>
+          ${allTechs.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="panel-field">
+        <div class="panel-label">Urgency</div>
+        <select class="panel-select" id="field-urgency">
+          <option value="normal">Normal</option>
+          <option value="urgent">Urgent</option>
+          <option value="emergency">Emergency</option>
+        </select>
+      </div>
+      <div class="panel-field"><div class="panel-label">Notes</div><textarea class="panel-textarea" id="field-notes" placeholder="Any additional details..."></textarea></div>
+    </div>
+  `;
+
+  document.getElementById('save-btn').textContent = 'Create Job';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('job-panel').classList.add('open');
+}
+
+// Override saveJob for new job
+const _origSave = saveJob;
+window.saveJob = async function() {
+  if (!currentJob) return;
+  if (currentJob._isNew) {
+    await createNewJob();
+    return;
+  }
+  await _origSave();
+};
+
+async function createNewJob() {
+  const name = document.getElementById('field-name')?.value?.trim();
+  const address = document.getElementById('field-address')?.value?.trim();
+  const service = document.getElementById('field-service')?.value?.trim();
+  if (!name || !address || !service) { showToast('⚠ Name, address, and service are required'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Creating...';
+  btn.disabled = true;
+
+  const phone = document.getElementById('field-phone')?.value?.trim();
+
+  // Upsert customer
+  const { data: customer } = await db.from('customers')
+    .upsert({ name, phone: phone||null, address }, { onConflict: 'phone', ignoreDuplicates: false })
+    .select().single();
+
+  const { error } = await db.from('jobs').insert({
+    customer_id: customer?.id,
+    service_type: service,
+    address,
+    scheduled_at: document.getElementById('field-scheduled')?.value || null,
+    technician_id: document.getElementById('field-tech')?.value || null,
+    urgency: document.getElementById('field-urgency')?.value || 'normal',
+    notes: document.getElementById('field-notes')?.value || null,
+    status: 'scheduled',
+    source: 'dispatcher',
+  });
+
+  btn.textContent = 'Create Job';
+  btn.disabled = false;
+
+  if (!error) {
+    showToast('✓ Job created successfully');
+    closePanel();
+    loadPage(currentPage);
+  } else {
+    showToast('⚠ Error creating job');
+    console.error(error);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('save-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function jobRowHTML(j) {
+  return `<div class="job-row ${urgClass(j)}" onclick="openJobPanel('${j.id}')">
+    <div class="job-avatar" style="background:${colorFor(j.customers?.name)}">${initials(j.customers?.name)}</div>
+    <div>
+      <div class="job-name">${j.customers?.name||'Unknown'}${j.source==='ai_voice'?'<span class="ai-badge">🤖</span>':''}</div>
+      <div class="job-detail">${j.service_type||'—'} · ${j.address||j.customers?.address||'—'}${j.technicians?.name?' · '+j.technicians.name:''}</div>
+    </div>
+    ${statusPill(j.status)}
+    <div class="job-time">${fmt(j.scheduled_at||j.created_at)}</div>
+    <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openJobPanel('${j.id}')">Manage</button>
+  </div>`;
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
 async function loadDashboard() {
   const now = new Date();
-  document.getElementById('dash-date').textContent =
-    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-  // Jobs today
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const { data: todayJobs } = await db.from('jobs').select('*').gte('created_at', todayStart.toISOString());
-  document.getElementById('kpi-today').textContent = todayJobs?.length || 0;
+  const { data: todayJobs } = await db.from('jobs').select('*').gte('created_at',todayStart.toISOString());
+  document.getElementById('kpi-today').textContent = todayJobs?.length||0;
   document.getElementById('kpi-today-sub').textContent = `${todayJobs?.filter(j=>j.status==='complete').length||0} completed`;
-
-  // All open jobs
   const { data: openJobs } = await db.from('jobs').select('*').not('status','in','("complete","cancelled")');
-  document.getElementById('kpi-open').textContent = openJobs?.length || 0;
+  document.getElementById('kpi-open').textContent = openJobs?.length||0;
   document.getElementById('kpi-open-sub').textContent = `${openJobs?.filter(j=>j.urgency==='urgent'||j.urgency==='emergency').length||0} urgent`;
-  document.getElementById('badge-dispatch').textContent = openJobs?.length || 0;
-
-  // Revenue MTD
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const { data: mtdJobs } = await db.from('jobs').select('invoice_amount').gte('created_at', monthStart.toISOString()).eq('status','complete');
-  const revenue = (mtdJobs||[]).reduce((s,j)=>s+(j.invoice_amount||0),0);
-  document.getElementById('kpi-revenue').textContent = revenue > 0 ? `$${(revenue/1000).toFixed(1)}k` : '$0';
+  document.getElementById('badge-dispatch').textContent = openJobs?.length||0;
+  const monthStart = new Date(now.getFullYear(),now.getMonth(),1);
+  const { data: mtdJobs } = await db.from('jobs').select('invoice_amount').gte('created_at',monthStart.toISOString()).eq('status','complete');
+  const rev = (mtdJobs||[]).reduce((s,j)=>s+(j.invoice_amount||0),0);
+  document.getElementById('kpi-revenue').textContent = rev>0?'$'+(rev/1000).toFixed(1)+'k':'$0';
   document.getElementById('kpi-rev-sub').textContent = `${mtdJobs?.length||0} jobs completed`;
-
-  // AI calls today
-  const { data: todayCalls } = await db.from('call_logs').select('*').gte('created_at', todayStart.toISOString());
-  const bookedCalls = (todayCalls||[]).filter(c=>c.outcome==='booked');
-  document.getElementById('kpi-calls').textContent = todayCalls?.length || 0;
-  document.getElementById('kpi-calls-sub').textContent = `${bookedCalls.length} booked`;
-  document.getElementById('kpi-ai-booked').textContent = bookedCalls.length;
-  document.getElementById('badge-calls').textContent = bookedCalls.length;
-  const rate = todayCalls?.length ? Math.round(bookedCalls.length/todayCalls.length*100) : 0;
+  const { data: todayCalls } = await db.from('call_logs').select('*').gte('created_at',todayStart.toISOString());
+  const booked = (todayCalls||[]).filter(c=>c.outcome==='booked').length;
+  document.getElementById('kpi-calls').textContent = todayCalls?.length||0;
+  document.getElementById('kpi-calls-sub').textContent = `${booked} booked`;
+  document.getElementById('kpi-ai-booked').textContent = booked;
+  document.getElementById('badge-calls').textContent = booked;
+  const rate = todayCalls?.length?Math.round(booked/todayCalls.length*100):0;
   document.getElementById('kpi-ai-sub').textContent = `${rate}% booking rate`;
-
-  // Recent jobs
-  const { data: recentJobs } = await db.from('jobs').select('*, customers(name)').order('created_at',{ascending:false}).limit(5);
-  const jobsEl = document.getElementById('dash-jobs');
-  if (!recentJobs?.length) { jobsEl.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No jobs yet</div></div>'; }
-  else {
-    jobsEl.innerHTML = recentJobs.map(j => `
-      <div class="job-row ${urgencyClass(j.urgency)}">
-        <div class="job-avatar" style="background:${colorFor(j.customers?.name)}">${initials(j.customers?.name)}</div>
-        <div><div class="job-name">${j.customers?.name||'Unknown'}</div><div class="job-detail">${j.service_type||'—'} · ${j.address||'—'}</div></div>
-        ${statusPill(j.status)}
-        <div class="job-time">${fmt(j.scheduled_at||j.created_at)}</div>
-        <button class="btn btn-outline btn-sm">View</button>
-      </div>`).join('');
-  }
-
-  // Technicians
+  const { data: recent } = await db.from('jobs').select('*,customers(name),technicians(name)').order('created_at',{ascending:false}).limit(5);
+  const je = document.getElementById('dash-jobs');
+  if(!recent?.length){je.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No jobs yet</div></div>';}
+  else{je.innerHTML=recent.map(jobRowHTML).join('');}
   const { data: techs } = await db.from('technicians').select('*');
-  const techsEl = document.getElementById('dash-techs');
-  if (!techs?.length) { techsEl.innerHTML = '<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">No techs found</div></div>'; }
-  else {
-    techsEl.innerHTML = techs.map(t => `
-      <div class="tech-card">
-        <div class="tech-avatar-lg" style="background:${colorFor(t.name)}">${initials(t.name)}</div>
-        <div class="tech-name">${t.name}</div>
-        <div class="tech-status">${t.status||'available'}</div>
-        ${t.is_oncall ? '<div class="tech-stat">On-Call</div>' : ''}
-      </div>`).join('');
-  }
-
-  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  allTechs = techs||[];
+  const te = document.getElementById('dash-techs');
+  if(!techs?.length){te.innerHTML='<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">No techs found</div></div>';}
+  else{te.innerHTML=techs.map(t=>`<div class="tech-card"><div class="tech-avatar-lg" style="background:${colorFor(t.name)}">${initials(t.name)}</div><div class="tech-name">${t.name}</div><div class="tech-status">${t.status||'available'}</div>${t.is_oncall?'<div style="font-size:11px;color:var(--red);font-weight:600;margin-top:4px">On-Call</div>':''}</div>`).join('');}
+  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
 // ── DISPATCH ─────────────────────────────────────────────────────────────────
 async function loadDispatch() {
-  const { data: jobs, error } = await db.from('jobs')
-    .select('*, customers(name, phone), technicians(name)')
-    .not('status','in','("complete","cancelled")')
-    .order('created_at', { ascending: false });
-
-  document.getElementById('dispatch-sub').textContent = `${jobs?.length||0} active jobs`;
-
-  const el = document.getElementById('dispatch-jobs');
-  if (!jobs?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No active jobs — all clear!</div></div>'; return; }
-
-  el.innerHTML = jobs.map(j => `
-    <div class="job-row ${urgencyClass(j.urgency)}">
-      <div class="job-avatar" style="background:${colorFor(j.customers?.name)}">${initials(j.customers?.name)}</div>
-      <div>
-        <div class="job-name">${j.customers?.name||'Unknown'} ${j.source==='ai_voice'?'<span style="font-size:10px;background:#eaf4fb;color:#2471A3;padding:1px 6px;border-radius:4px;margin-left:4px">AI</span>':''}</div>
-        <div class="job-detail">${j.service_type||'—'} · ${j.address||'—'} ${j.technicians?.name?'· Tech: '+j.technicians.name:''}</div>
-      </div>
-      ${statusPill(j.status)}
-      <div class="job-time">${fmt(j.scheduled_at||j.created_at)}</div>
-      <button class="btn btn-outline btn-sm">Manage</button>
-    </div>`).join('');
+  const { data: jobs } = await db.from('jobs').select('*,customers(name,phone),technicians(name)').not('status','in','("complete","cancelled")').order('created_at',{ascending:false});
+  document.getElementById('dispatch-sub').textContent=`${jobs?.length||0} active jobs`;
+  const el=document.getElementById('dispatch-jobs');
+  if(!jobs?.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No active jobs — all clear!</div></div>';return;}
+  el.innerHTML=jobs.map(jobRowHTML).join('');
 }
 
 // ── SCHEDULE ─────────────────────────────────────────────────────────────────
 async function loadSchedule() {
-  const { data: slots } = await db.from('availability_slots')
-    .select('*, technicians(name)')
-    .gte('starts_at', new Date().toISOString())
-    .order('starts_at').limit(20);
-
-  const el = document.getElementById('schedule-content');
-  if (!slots?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No upcoming slots. Add availability for your techs.</div></div>'; return; }
-
-  el.innerHTML = `<div class="job-list">${slots.map(s => `
-    <div class="job-row ${s.booked?'complete':'scheduled'}">
-      <div class="job-avatar" style="background:${colorFor(s.technicians?.name)}">${initials(s.technicians?.name)}</div>
-      <div>
-        <div class="job-name">${s.technicians?.name||'Unknown Tech'}</div>
-        <div class="job-detail">${fmt(s.starts_at)} — ${fmt(s.ends_at)}</div>
-      </div>
-      <span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span>
-    </div>`).join('')}</div>`;
+  const { data: slots } = await db.from('availability_slots').select('*,technicians(name)').gte('starts_at',new Date().toISOString()).order('starts_at').limit(20);
+  const el=document.getElementById('schedule-content');
+  if(!slots?.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No upcoming slots yet.</div></div>';return;}
+  el.innerHTML=`<div class="job-list">${slots.map(s=>`<div class="job-row ${s.booked?'complete':'scheduled'}"><div class="job-avatar" style="background:${colorFor(s.technicians?.name)}">${initials(s.technicians?.name)}</div><div><div class="job-name">${s.technicians?.name||'Unknown Tech'}</div><div class="job-detail">${fmt(s.starts_at)} — ${fmt(s.ends_at)}</div></div><span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span></div>`).join('')}</div>`;
 }
 
 // ── CUSTOMERS ────────────────────────────────────────────────────────────────
 async function loadCustomers() {
-  const { data: customers, count } = await db.from('customers')
-    .select('*', { count: 'exact' }).order('created_at', { ascending: false });
-
-  document.getElementById('customers-sub').textContent = `${count||0} total customers`;
-
-  const tb = document.getElementById('customers-table');
-  if (!customers?.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No customers yet</div></div></td></tr>'; return; }
-
-  tb.innerHTML = customers.map(c => `
-    <tr>
-      <td><div style="display:flex;align-items:center;gap:8px"><div class="job-avatar" style="background:${colorFor(c.name)};width:28px;height:28px;font-size:11px">${initials(c.name)}</div><span style="font-weight:600">${c.name||'—'}</span></div></td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px">${c.phone||'—'}</td>
-      <td style="color:var(--muted);font-size:12px">${c.address||'—'}</td>
-      <td><span class="pill pill-blue">View Jobs</span></td>
-      <td style="color:var(--muted);font-size:12px">${fmtDate(c.created_at)}</td>
-    </tr>`).join('');
+  const { data: customers,count } = await db.from('customers').select('*',{count:'exact'}).order('created_at',{ascending:false});
+  document.getElementById('customers-sub').textContent=`${count||0} total customers`;
+  const tb=document.getElementById('customers-table');
+  if(!customers?.length){tb.innerHTML='<tr><td colspan="4"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No customers yet</div></div></td></tr>';return;}
+  tb.innerHTML=customers.map(c=>`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="job-avatar" style="background:${colorFor(c.name)};width:28px;height:28px;font-size:11px">${initials(c.name)}</div><span style="font-weight:600">${c.name||'—'}</span></div></td><td style="font-family:'DM Mono',monospace;font-size:12px">${c.phone||'—'}</td><td style="color:var(--muted);font-size:12px">${c.address||'—'}</td><td style="color:var(--muted);font-size:12px">${fmtDate(c.created_at)}</td></tr>`).join('');
 }
 
 // ── INVOICES ─────────────────────────────────────────────────────────────────
 async function loadInvoices() {
-  const { data: jobs } = await db.from('jobs')
-    .select('*, customers(name)').order('created_at', { ascending: false }).limit(50);
-
-  const outstanding = (jobs||[]).filter(j=>j.status==='complete'&&!j.invoice_paid).reduce((s,j)=>s+(j.invoice_amount||0),0);
-  document.getElementById('invoices-sub').textContent = `$${outstanding.toLocaleString()} outstanding`;
-
-  const tb = document.getElementById('invoices-table');
-  if (!jobs?.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">💵</div><div class="empty-text">No jobs yet</div></div></td></tr>'; return; }
-
-  tb.innerHTML = jobs.map(j => `
-    <tr>
-      <td class="td-id">#${j.id?.slice(0,8)||'—'}</td>
-      <td style="font-weight:600">${j.customers?.name||'—'}</td>
-      <td style="color:var(--muted);font-size:12px">${j.service_type||'—'}</td>
-      <td>${statusPill(j.status)}</td>
-      <td class="td-amount">${j.invoice_amount?'$'+j.invoice_amount.toLocaleString():'—'}</td>
-      <td style="color:var(--muted);font-size:12px">${fmtDate(j.created_at)}</td>
-    </tr>`).join('');
+  const { data: jobs } = await db.from('jobs').select('*,customers(name)').order('created_at',{ascending:false}).limit(50);
+  const outstanding=(jobs||[]).filter(j=>j.status==='complete'&&!j.invoice_paid).reduce((s,j)=>s+(j.invoice_amount||0),0);
+  document.getElementById('invoices-sub').textContent=`$${outstanding.toLocaleString()} outstanding`;
+  const tb=document.getElementById('invoices-table');
+  if(!jobs?.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">💵</div><div class="empty-text">No jobs yet</div></div></td></tr>';return;}
+  tb.innerHTML=jobs.map(j=>`<tr onclick="openJobPanel('${j.id}')"><td class="td-id">#${j.id?.slice(0,8)}</td><td style="font-weight:600">${j.customers?.name||'—'}</td><td style="color:var(--muted);font-size:12px">${j.service_type||'—'}</td><td>${statusPill(j.status)}</td><td class="td-amount">${j.invoice_amount?'$'+j.invoice_amount.toLocaleString():'—'}</td><td>${j.invoice_paid?'<span class="pill pill-green">Paid</span>':'<span class="pill pill-gray">Unpaid</span>'}</td><td style="color:var(--muted);font-size:12px">${fmtDate(j.created_at)}</td></tr>`).join('');
 }
 
 // ── AI CALLS ─────────────────────────────────────────────────────────────────
 async function loadCalls() {
-  const { data: calls } = await db.from('call_logs').select('*, customers(name)').order('created_at', { ascending: false }).limit(30);
-
-  const total = calls?.length||0;
-  const booked = (calls||[]).filter(c=>c.outcome==='booked').length;
-  const rate = total ? Math.round(booked/total*100) : 0;
-
-  document.getElementById('ai-total').textContent = total;
-  document.getElementById('ai-booked').textContent = booked;
-  document.getElementById('ai-rate').textContent = rate + '%';
-
-  const el = document.getElementById('calls-list');
-  if (!calls?.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📞</div><div class="empty-text">No calls yet. Call (801) 406-8585 to test Aria!</div></div>'; return; }
-
-  el.innerHTML = calls.map(c => {
-    const isBooked = c.outcome === 'booked';
-    return `<div class="call-row">
-      <div class="call-icon" style="background:${isBooked?'var(--green-light)':'var(--red-light)'}">${isBooked?'📞':'📵'}</div>
-      <div class="call-info">
-        <div class="call-name">${c.customers?.name||c.caller_number||'Unknown'}</div>
-        <div class="call-detail">${c.summary||'AI call recorded'}</div>
-      </div>
-      <div class="call-meta">
-        <div class="call-time">${fmt(c.created_at)}</div>
-        <div class="call-outcome" style="color:${isBooked?'var(--green)':'var(--muted)'}">${isBooked?'Booked':'No booking'}</div>
-      </div>
-    </div>`;
-  }).join('');
+  const { data: calls } = await db.from('call_logs').select('*,customers(name)').order('created_at',{ascending:false}).limit(30);
+  const total=calls?.length||0,booked=(calls||[]).filter(c=>c.outcome==='booked').length,rate=total?Math.round(booked/total*100):0;
+  document.getElementById('ai-total').textContent=total;
+  document.getElementById('ai-booked').textContent=booked;
+  document.getElementById('ai-rate').textContent=rate+'%';
+  const el=document.getElementById('calls-list');
+  if(!calls?.length){el.innerHTML='<div class="empty"><div class="empty-icon">📞</div><div class="empty-text">No calls yet. Call (801) 406-8585 to test Aria!</div></div>';return;}
+  el.innerHTML=calls.map(c=>`<div class="call-row"><div class="call-icon" style="background:${c.outcome==='booked'?'var(--green-light)':'var(--red-light)'}">${c.outcome==='booked'?'📞':'📵'}</div><div class="call-info"><div class="call-name">${c.customers?.name||c.caller_number||'Unknown'}</div><div class="call-detail">${c.summary||'AI call recorded'}</div></div><div class="call-meta"><div class="call-time">${fmt(c.created_at)}</div><div class="call-outcome" style="color:${c.outcome==='booked'?'var(--green)':'var(--muted)'}">${c.outcome==='booked'?'Booked':'No booking'}</div></div></div>`).join('');
 }
 
 // ── REPORTS ──────────────────────────────────────────────────────────────────
 async function loadReports() {
-  const now = new Date();
-  document.getElementById('reports-sub').textContent = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-  const { count: totalJobs } = await db.from('jobs').select('*',{count:'exact',head:true});
-  const { count: totalCustomers } = await db.from('customers').select('*',{count:'exact',head:true});
-  const { count: aiJobs } = await db.from('jobs').select('*',{count:'exact',head:true}).eq('source','ai_voice');
-  const { count: completeJobs } = await db.from('jobs').select('*',{count:'exact',head:true}).eq('status','complete');
-
-  document.getElementById('rep-jobs').textContent = totalJobs||0;
-  document.getElementById('rep-customers').textContent = totalCustomers||0;
-  document.getElementById('rep-ai').textContent = aiJobs||0;
-  document.getElementById('rep-complete').textContent = completeJobs||0;
-
-  // Status breakdown
-  const { data: statusData } = await db.from('jobs').select('status');
-  const statusCounts = {};
-  (statusData||[]).forEach(j => { statusCounts[j.status] = (statusCounts[j.status]||0)+1; });
-  const maxStatus = Math.max(...Object.values(statusCounts),1);
-  document.getElementById('reports-status').innerHTML = Object.entries(statusCounts).map(([s,n]) => `
-    <div class="bar-row">
-      <div class="bar-label">${s.replace('_',' ')}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxStatus*100)}%;background:var(--blue)">${n}</div></div>
-      <div class="bar-val">${n}</div>
-    </div>`).join('') || '<div class="empty"><div class="empty-text">No data yet</div></div>';
-
-  // Source breakdown
-  const { data: sourceData } = await db.from('jobs').select('source');
-  const sourceCounts = {};
-  (sourceData||[]).forEach(j => { sourceCounts[j.source||'unknown'] = (sourceCounts[j.source||'unknown']||0)+1; });
-  const maxSource = Math.max(...Object.values(sourceCounts),1);
-  document.getElementById('reports-source').innerHTML = Object.entries(sourceCounts).map(([s,n]) => `
-    <div class="bar-row">
-      <div class="bar-label">${s}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxSource*100)}%;background:var(--red)">${n}</div></div>
-      <div class="bar-val">${n}</div>
-    </div>`).join('') || '<div class="empty"><div class="empty-text">No data yet</div></div>';
+  const now=new Date();
+  document.getElementById('reports-sub').textContent=now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const [{count:tj},{count:tc},{count:ai},{count:cp}]=await Promise.all([
+    db.from('jobs').select('*',{count:'exact',head:true}),
+    db.from('customers').select('*',{count:'exact',head:true}),
+    db.from('jobs').select('*',{count:'exact',head:true}).eq('source','ai_voice'),
+    db.from('jobs').select('*',{count:'exact',head:true}).eq('status','complete'),
+  ]);
+  document.getElementById('rep-jobs').textContent=tj||0;
+  document.getElementById('rep-customers').textContent=tc||0;
+  document.getElementById('rep-ai').textContent=ai||0;
+  document.getElementById('rep-complete').textContent=cp||0;
+  const {data:sd}=await db.from('jobs').select('status');
+  const sc={};(sd||[]).forEach(j=>{sc[j.status]=(sc[j.status]||0)+1;});
+  const ms=Math.max(...Object.values(sc),1);
+  document.getElementById('reports-status').innerHTML=Object.entries(sc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s.replace('_',' ')}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/ms*100)}%;background:var(--blue)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data yet</div></div>';
+  const {data:src}=await db.from('jobs').select('source');
+  const srcc={};(src||[]).forEach(j=>{srcc[j.source||'unknown']=(srcc[j.source||'unknown']||0)+1;});
+  const msr=Math.max(...Object.values(srcc),1);
+  document.getElementById('reports-source').innerHTML=Object.entries(srcc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/msr*100)}%;background:var(--red)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data yet</div></div>';
 }
 
-// ── REAL-TIME SUBSCRIPTIONS ──────────────────────────────────────────────────
-db.channel('jobs-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-    if (currentPage === 'dashboard') loadDashboard();
-    if (currentPage === 'dispatch') loadDispatch();
-  }).subscribe();
-
-db.channel('calls-changes')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'call_logs' }, () => {
-    if (currentPage === 'calls') loadCalls();
-    if (currentPage === 'dashboard') loadDashboard();
-  }).subscribe();
+// ── REAL-TIME ────────────────────────────────────────────────────────────────
+db.channel('jobs').on('postgres_changes',{event:'*',schema:'public',table:'jobs'},()=>{
+  if(currentPage==='dashboard')loadDashboard();
+  if(currentPage==='dispatch')loadDispatch();
+  if(currentPage==='invoices')loadInvoices();
+}).subscribe();
+db.channel('calls').on('postgres_changes',{event:'*',schema:'public',table:'call_logs'},()=>{
+  if(currentPage==='calls')loadCalls();
+  if(currentPage==='dashboard')loadDashboard();
+}).subscribe();
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
+(async()=>{const{data:t}=await db.from('technicians').select('*');allTechs=t||[];})();
 loadDashboard();
 </script>
 </body>
