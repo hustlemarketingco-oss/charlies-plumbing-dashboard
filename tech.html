@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Charlie's Plumbing — Tech App</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#C0392B;--red-dark:#96281B;--red-light:#fdf0ee;
+  --blue:#1A3A5C;--blue-mid:#2471A3;--blue-light:#e8f4fc;
+  --green:#1E8449;--green-light:#eafaf1;
+  --amber:#B7770D;--amber-light:#fef9e7;
+  --border:#E2E6EA;--off:#F7F8FA;--muted:#7F8C8D;--text:#1C2833;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:var(--blue);}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;color:white;letter-spacing:3px;margin-bottom:4px;}
+.login-logo span{color:var(--red);}
+.login-sub{font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:40px;}
+.login-label{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:8px;align-self:flex-start;width:100%;font-weight:600;letter-spacing:0.5px;}
+.login-select{width:100%;padding:14px 16px;border-radius:12px;border:none;font-size:16px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,0.12);color:white;margin-bottom:16px;outline:none;appearance:none;cursor:pointer;}
+.login-select option{background:var(--blue);color:white;}
+.login-btn{width:100%;padding:16px;border-radius:12px;border:none;background:var(--red);color:white;font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:0.5px;margin-top:8px;transition:background 0.15s;}
+.login-btn:hover{background:var(--red-dark);}
+.login-btn:active{transform:scale(0.98);}
+
+/* ── MAIN APP ── */
+.app-screen{display:none;min-height:100vh;flex-direction:column;}
+.app-screen.visible{display:flex;}
+
+/* ── HEADER ── */
+.header{background:var(--blue);padding:16px 20px 14px;position:sticky;top:0;z-index:50;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.header-name{font-family:'Bebas Neue',sans-serif;font-size:20px;color:white;letter-spacing:1.5px;}
+.header-date{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.5px;}
+.header-badge{background:var(--red);color:white;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace;}
+.logout-btn{background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 0;}
+
+/* ── JOBS ── */
+.jobs-container{flex:1;padding:16px;}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:600;margin-bottom:10px;padding-left:2px;}
+
+/* ── JOB CARD ── */
+.job-card{background:white;border-radius:16px;border:1px solid var(--border);margin-bottom:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.job-card-header{padding:16px 18px 12px;border-bottom:1px solid var(--border);}
+.job-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.job-customer{font-size:17px;font-weight:700;color:var(--text);}
+.job-service{font-size:13px;color:var(--muted);margin-top:2px;}
+.job-address{font-size:13px;color:var(--blue-mid);margin-top:4px;font-weight:500;}
+.job-time-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.job-time{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.job-notes{font-size:12px;color:var(--muted);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+
+/* ── STATUS ACTIONS ── */
+.job-actions{padding:14px 18px;display:flex;flex-direction:column;gap:10px;}
+.action-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:2px;}
+.status-flow{display:flex;gap:8px;}
+.action-btn{flex:1;padding:13px 8px;border-radius:12px;border:none;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
+.action-btn:active{transform:scale(0.97);}
+.btn-enroute{background:var(--amber-light);color:var(--amber);border:2px solid rgba(183,119,13,0.3);}
+.btn-enroute.active{background:var(--amber);color:white;border-color:var(--amber);}
+.btn-onsite{background:var(--blue-light);color:var(--blue);border:2px solid rgba(26,58,92,0.15);}
+.btn-onsite.active{background:var(--blue);color:white;border-color:var(--blue);}
+.btn-complete{background:var(--green-light);color:var(--green);border:2px solid rgba(30,132,73,0.2);}
+.btn-complete.active{background:var(--green);color:white;border-color:var(--green);}
+.btn-map{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--blue-mid);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-map:active{background:var(--off);}
+
+/* ── CURRENT STATUS BADGE ── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+.sb-scheduled{background:var(--blue-light);color:var(--blue);}
+.sb-dispatched,.sb-en_route{background:var(--amber-light);color:var(--amber);}
+.sb-on_site{background:var(--blue-light);color:var(--blue-mid);}
+.sb-complete{background:var(--green-light);color:var(--green);}
+
+/* ── EMPTY / LOADING ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--blue);margin-bottom:6px;}
+.empty-text{font-size:13px;line-height:1.6;}
+.loading-state{text-align:center;padding:60px 20px;}
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blue);color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:100;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+
+/* ── CONFIRM MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:60;display:none;align-items:flex-end;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;margin:0 auto;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--blue);margin-bottom:6px;}
+.modal-text{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.modal-actions{display:flex;gap:10px;}
+.modal-confirm{flex:1;padding:14px;border-radius:12px;border:none;background:var(--green);color:white;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.modal-cancel{flex:1;padding:14px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.modal-confirm.red{background:var(--red);}
+.modal-confirm.amber{background:var(--amber);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">Charlie's <span>Plumbing</span></div>
+  <div class="login-sub">Tech Portal</div>
+  <div class="login-label">Who are you?</div>
+  <select class="login-select" id="tech-select">
+    <option value="">Select your name...</option>
+  </select>
+  <button class="login-btn" onclick="login()">Start My Day →</button>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-screen" id="app-screen">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-name" id="header-name">Loading...</div>
+        <div class="header-date" id="header-date"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="header-badge" id="jobs-badge">0 jobs</div>
+        <button class="logout-btn" onclick="logout()">Switch tech</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="jobs-container" id="jobs-container">
+    <div class="loading-state"><div class="spinner"></div><div style="font-size:13px;color:var(--muted)">Loading your jobs...</div></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-text" id="modal-text">Are you sure?</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" id="modal-confirm" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://bfnwuurnzvncfumsnnds.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_8aFV9Gj8xlDChJuXuENLHA_stiqieCr';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentTech = null;
+let pendingAction = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  // Load techs into selector
+  const { data: techs } = await db.from('technicians').select('*').order('name');
+  const sel = document.getElementById('tech-select');
+  (techs||[]).forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+
+  // Check if logged in
+  const saved = localStorage.getItem('cp_tech');
+  if (saved) {
+    const tech = (techs||[]).find(t => t.id === saved);
+    if (tech) { currentTech = tech; showApp(); return; }
+  }
+}
+
+function login() {
+  const sel = document.getElementById('tech-select');
+  if (!sel.value) { showToast('Please select your name', 'error'); return; }
+  const techId = sel.value;
+  localStorage.setItem('cp_tech', techId);
+  // Get tech from options
+  const opt = sel.options[sel.selectedIndex];
+  currentTech = { id: techId, name: opt.textContent };
+  showApp();
+}
+
+function logout() {
+  localStorage.removeItem('cp_tech');
+  currentTech = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').classList.remove('visible');
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').classList.add('visible');
+  document.getElementById('header-name').textContent = currentTech.name;
+  document.getElementById('header-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  loadJobs();
+}
+
+// ── LOAD JOBS ─────────────────────────────────────────────────────────────────
+async function loadJobs() {
+  const { data: jobs } = await db
+    .from('jobs')
+    .select('*, customers(name, phone, address)')
+    .eq('technician_id', currentTech.id)
+    .not('status', 'in', '("complete","cancelled")')
+    .order('scheduled_at', { ascending: true });
+
+  const { data: done } = await db
+    .from('jobs')
+    .select('*, customers(name, phone)')
+    .eq('technician_id', currentTech.id)
+    .eq('status', 'complete')
+    .gte('updated_at', new Date(new Date().setHours(0,0,0,0)).toISOString())
+    .order('updated_at', { ascending: false });
+
+  const container = document.getElementById('jobs-container');
+  const badge = document.getElementById('jobs-badge');
+  const activeJobs = jobs || [];
+  const doneJobs = done || [];
+
+  badge.textContent = `${activeJobs.length} job${activeJobs.length !== 1 ? 's' : ''}`;
+
+  if (!activeJobs.length && !doneJobs.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">✅</div>
+      <div class="empty-title">All Clear</div>
+      <div class="empty-text">You have no jobs assigned today.<br>Check back later or contact dispatch.</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (activeJobs.length) {
+    html += `<div class="section-label">Your Jobs Today</div>`;
+    html += activeJobs.map(j => jobCardHTML(j)).join('');
+  }
+
+  if (doneJobs.length) {
+    html += `<div class="section-label" style="margin-top:20px">Completed Today</div>`;
+    html += doneJobs.map(j => jobCardHTML(j, true)).join('');
+  }
+
+  container.innerHTML = html;
+}
+
+function jobCardHTML(job, isDone = false) {
+  const customer = job.customers;
+  const time = job.scheduled_at ? new Date(job.scheduled_at).toLocaleString('en-US',{hour:'numeric',minute:'2-digit',weekday:'short',month:'short',day:'numeric'}) : 'Time TBD';
+  const statusClass = `sb-${job.status}`;
+  const statusLabel = { scheduled:'Scheduled', dispatched:'Dispatched', en_route:'En Route 🚗', on_site:'On Site 🔧', complete:'Complete ✓' }[job.status] || job.status;
+  const address = job.address || customer?.address || '';
+  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
+
+  const enrouteActive = job.status === 'en_route' ? 'active' : '';
+  const onsiteActive = job.status === 'on_site' ? 'active' : '';
+  const completeActive = job.status === 'complete' ? 'active' : '';
+
+  return `<div class="job-card" id="job-${job.id}">
+    <div class="job-card-header">
+      <div class="job-card-top">
+        <div class="job-customer">${customer?.name || 'Unknown'}</div>
+        <span class="status-badge ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="job-service">${job.service_type || '—'}</div>
+      <div class="job-address">📍 ${address || 'No address'}</div>
+      <div class="job-time-row">
+        <div class="job-time">🕐 ${time}</div>
+        ${job.urgency === 'urgent' || job.urgency === 'emergency' ? '<span style="font-size:11px;background:#fdf0ee;color:#C0392B;padding:2px 8px;border-radius:10px;font-weight:700">URGENT</span>' : ''}
+      </div>
+      ${job.notes ? `<div class="job-notes">📝 ${job.notes}</div>` : ''}
+    </div>
+    ${!isDone ? `<div class="job-actions">
+      <div class="action-label">Update Status</div>
+      <div class="status-flow">
+        <button class="action-btn btn-enroute ${enrouteActive}" onclick="updateStatus('${job.id}', 'en_route', '${customer?.name}', '${customer?.phone||''}')">🚗 On My Way</button>
+        <button class="action-btn btn-onsite ${onsiteActive}" onclick="updateStatus('${job.id}', 'on_site', '${customer?.name}', '${customer?.phone||''}')">🔧 On Site</button>
+        <button class="action-btn btn-complete ${completeActive}" onclick="confirmComplete('${job.id}', '${customer?.name}', '${customer?.phone||''}')">✓ Job Done</button>
+      </div>
+      ${address ? `<button class="btn-map" onclick="window.open('${mapsUrl}','_blank')">🗺 Open in Maps</button>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+// ── STATUS UPDATE ─────────────────────────────────────────────────────────────
+async function updateStatus(jobId, newStatus, customerName, customerPhone) {
+  const labels = { en_route: 'On My Way', on_site: 'On Site', complete: 'Job Done' };
+
+  // Update in DB
+  const { error } = await db.from('jobs').update({ status: newStatus }).eq('id', jobId);
+  if (error) { showToast('Error updating status', 'error'); return; }
+
+  // Send SMS via Railway server
+  if (newStatus === 'en_route' && customerPhone) {
+    await sendSMS(customerPhone, customerName, newStatus, jobId);
+  }
+
+  showToast(`✓ Status updated: ${labels[newStatus]}`, 'success');
+  setTimeout(loadJobs, 500);
+}
+
+async function sendSMS(phone, customerName, status, jobId) {
+  try {
+    const messages = {
+      en_route: `Hi ${customerName}! Your Charlie's Plumbing tech ${currentTech.name} is on the way. They should arrive within 30 minutes. Questions? Call (801) 406-8585.`,
+      complete: `Hi ${customerName}, your Charlie's Plumbing service is complete. Thank you for choosing us! We'd love a review: https://g.page/r/charlies-plumbing/review`,
+    };
+    const body = messages[status];
+    if (!body) return;
+
+    await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: phone, body }),
+    });
+  } catch(e) {
+    console.log('SMS send attempted:', e.message);
+  }
+}
+
+// ── COMPLETE CONFIRM ──────────────────────────────────────────────────────────
+let pendingComplete = null;
+
+function confirmComplete(jobId, customerName, customerPhone) {
+  pendingComplete = { jobId, customerName, customerPhone };
+  document.getElementById('modal-title').textContent = 'Mark Job Complete?';
+  document.getElementById('modal-text').textContent = `This will mark the job for ${customerName} as complete and send them a thank you text with a Google review link.`;
+  document.getElementById('modal-confirm').textContent = '✓ Complete Job';
+  document.getElementById('modal-confirm').className = 'modal-confirm';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+async function confirmAction() {
+  closeModal();
+  if (!pendingComplete) return;
+  const { jobId, customerName, customerPhone } = pendingComplete;
+  pendingComplete = null;
+  await updateStatus(jobId, 'complete', customerName, customerPhone);
+  if (customerPhone) await sendSMS(customerPhone, customerName, 'complete', jobId);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── REAL-TIME ────────────────────────────────────────────────────────────────
+db.channel('tech-jobs')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
+    if (currentTech) loadJobs();
+  }).subscribe();
+
+// ── START ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
