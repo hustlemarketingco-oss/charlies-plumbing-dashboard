@@ -29,6 +29,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);he
 .nav-icon{font-size:15px;width:20px;text-align:center;}
 .nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;}
 .nav-badge.green{background:var(--green);}
+.nav-badge.amber{background:var(--amber);}
 .sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
 .sidebar-footer-text{font-size:11px;color:var(--muted);line-height:1.6;}
 .main{flex:1;overflow-y:auto;padding:24px;}
@@ -114,7 +115,6 @@ tr:hover td{background:var(--off);cursor:pointer;}
 .call-detail{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .call-meta{text-align:right;flex-shrink:0;}
 .call-time{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
-.call-outcome{font-size:11px;font-weight:700;}
 .loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:13px;gap:8px;}
 .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -124,14 +124,15 @@ tr:hover td{background:var(--off);cursor:pointer;}
 /* PANELS */
 .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .panel-overlay.open{opacity:1;pointer-events:all;}
-.slide-panel{position:fixed;right:0;top:0;bottom:0;width:460px;max-width:100vw;background:white;z-index:201;transform:translateX(100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,0.15);}
+.slide-panel{position:fixed;right:0;top:0;bottom:0;width:480px;max-width:100vw;background:white;z-index:201;transform:translateX(100%);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,0.15);}
 .slide-panel.open{transform:translateX(0);}
+.slide-panel.wide{width:600px;}
 .panel-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .panel-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--blue);}
 .panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
 .panel-close:hover{background:var(--off);}
 .panel-body{flex:1;overflow-y:auto;padding:20px 24px;}
-.panel-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.panel-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
 .panel-section{margin-bottom:22px;}
 .panel-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 .panel-field{margin-bottom:14px;}
@@ -142,7 +143,6 @@ tr:hover td{background:var(--off);cursor:pointer;}
 .panel-textarea{resize:vertical;min-height:80px;}
 .status-buttons{display:flex;flex-wrap:wrap;gap:6px;}
 .status-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--muted);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
-.status-btn:hover{border-color:var(--blue-mid);color:var(--blue-mid);}
 .status-btn.sel-scheduled{background:var(--blue-light);color:var(--blue);border-color:var(--blue);}
 .status-btn.sel-dispatched,.status-btn.sel-en_route,.status-btn.sel-on_site{background:var(--amber-light);color:var(--amber);border-color:var(--amber);}
 .status-btn.sel-complete{background:var(--green-light);color:var(--green);border-color:var(--green);}
@@ -181,22 +181,34 @@ tr:hover td{background:var(--off);cursor:pointer;}
 .toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.2s;}
 input:checked+.toggle-slider{background:var(--green);}
 input:checked+.toggle-slider:before{transform:translateX(16px);}
-.day-slots{margin-bottom:16px;}
-.day-label{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-.add-slot-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
-.add-slot-row .panel-input{flex:1;}
+.oncall-badge{display:inline-flex;align-items:center;gap:4px;background:#fdf0ee;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;}
+/* ESTIMATE BUILDER */
+.estimate-card{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:all 0.15s;}
+.estimate-card:hover{border-color:var(--blue-mid);box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.estimate-card-header{padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.estimate-card-body{padding:0 16px 14px;border-top:1px solid var(--off);}
+.line-items-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;}
+.line-items-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);}
+.line-items-table td{padding:8px;border-bottom:1px solid var(--off);vertical-align:middle;}
+.line-items-table input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.line-items-table input:focus{border-color:var(--blue);}
+.line-items-table input[type=number]{width:80px;}
+.estimate-totals{background:var(--off);border-radius:8px;padding:12px 16px;margin-top:8px;}
+.estimate-total-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.estimate-total-row.grand{font-size:16px;font-weight:700;color:var(--blue);border-top:1px solid var(--border);margin-top:6px;padding-top:6px;}
+.estimate-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+/* SAVE TOAST */
 .save-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--blue);color:white;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;transition:transform 0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
 .save-toast.show{transform:translateX(-50%) translateY(0);}
 .ai-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:6px;vertical-align:middle;}
-.mobile-nav{display:none;background:white;border-top:1px solid var(--border);padding:8px 0 4px;}
-.mobile-nav-items{display:flex;justify-content:space-around;}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;border-radius:8px;}
-.mobile-nav-item.active{color:var(--blue);}
-.mobile-nav-icon{font-size:18px;}
 .search-box{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:white;margin-bottom:16px;}
 .search-box:focus{border-color:var(--blue);}
-.oncall-badge{display:inline-flex;align-items:center;gap:4px;background:#fdf0ee;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;}
-@media(max-width:768px){.sidebar{display:none;}.mobile-nav{display:block;}.app{flex-direction:column;}.main{padding:16px;}body{overflow:auto;}.app{overflow:auto;}.job-row{grid-template-columns:38px 1fr auto;}.job-row .job-time{display:none;}.slide-panel{width:100vw;}}
+.mobile-nav{display:none;background:white;border-top:1px solid var(--border);padding:8px 0 4px;}
+.mobile-nav-items{display:flex;justify-content:space-around;}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;border-radius:8px;}
+.mobile-nav-item.active{color:var(--blue);}
+.mobile-nav-icon{font-size:18px;}
+@media(max-width:768px){.sidebar{display:none;}.mobile-nav{display:block;}.app{flex-direction:column;}.main{padding:16px;}body{overflow:auto;}.app{overflow:auto;}.job-row{grid-template-columns:38px 1fr auto;}.job-row .job-time{display:none;}.slide-panel,.slide-panel.wide{width:100vw;}}
 </style>
 </head>
 <body>
@@ -219,6 +231,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   <div class="nav-item" onclick="nav('customers',this)"><span class="nav-icon">👥</span> Customers</div>
   <div class="nav-item" onclick="nav('techs',this)"><span class="nav-icon">👷</span> Technicians</div>
   <div class="nav-section">Finance</div>
+  <div class="nav-item" onclick="nav('estimates',this)"><span class="nav-icon">📄</span> Estimates <span class="nav-badge amber" id="badge-estimates">—</span></div>
   <div class="nav-item" onclick="nav('invoices',this)"><span class="nav-icon">💵</span> Invoices</div>
   <div class="nav-section">Intelligence</div>
   <div class="nav-item" onclick="nav('calls',this)"><span class="nav-icon">📞</span> AI Calls <span class="nav-badge green" id="badge-calls">—</span></div>
@@ -238,8 +251,8 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       <div class="kpi"><div class="kpi-label">Jobs Today</div><div class="kpi-value" id="kpi-today">—</div><div class="kpi-change neutral" id="kpi-today-sub">loading</div></div>
       <div class="kpi"><div class="kpi-label">Revenue MTD</div><div class="kpi-value" id="kpi-revenue">—</div><div class="kpi-change" id="kpi-rev-sub">loading</div></div>
       <div class="kpi"><div class="kpi-label">Open Jobs</div><div class="kpi-value" id="kpi-open">—</div><div class="kpi-change neutral" id="kpi-open-sub">loading</div></div>
+      <div class="kpi"><div class="kpi-label">Estimates Out</div><div class="kpi-value" id="kpi-estimates">—</div><div class="kpi-change amber" id="kpi-est-sub">loading</div></div>
       <div class="kpi"><div class="kpi-label">AI Calls Today</div><div class="kpi-value" id="kpi-calls">—</div><div class="kpi-change" id="kpi-calls-sub">loading</div></div>
-      <div class="kpi"><div class="kpi-label">Active Techs</div><div class="kpi-value" id="kpi-techs">—</div><div class="kpi-change neutral" id="kpi-techs-sub">loading</div></div>
     </div>
     <div class="two-col">
       <div class="card">
@@ -247,8 +260,8 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
         <div class="job-list" id="dash-jobs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Technicians</span><button class="btn btn-outline btn-sm" onclick="nav('techs',document.querySelector('[onclick*=techs]'))">Manage</button></div>
-        <div class="tech-grid" id="dash-techs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+        <div class="card-header"><span class="card-title">Pending Estimates</span><button class="btn btn-outline btn-sm" onclick="nav('estimates',document.querySelector('[onclick*=estimates]'))">View All</button></div>
+        <div id="dash-estimates"><div class="loading"><div class="spinner"></div> Loading...</div></div>
       </div>
     </div>
   </div>
@@ -265,7 +278,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   </div>
   <!-- SCHEDULE -->
   <div class="page" id="page-schedule">
-    <div class="page-header"><div><div class="page-title">Schedule</div><div class="page-sub">Upcoming availability slots</div></div></div>
+    <div class="page-header"><div><div class="page-title">Schedule</div><div class="page-sub">Upcoming availability</div></div></div>
     <div class="card">
       <div class="card-header"><span class="card-title">This Week</span></div>
       <div id="schedule-content"><div class="loading"><div class="spinner"></div> Loading...</div></div>
@@ -273,16 +286,11 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   </div>
   <!-- CUSTOMERS -->
   <div class="page" id="page-customers">
-    <div class="page-header">
-      <div><div class="page-title">Customers</div><div class="page-sub" id="customers-sub">Loading...</div></div>
-    </div>
+    <div class="page-header"><div><div class="page-title">Customers</div><div class="page-sub" id="customers-sub">Loading...</div></div></div>
     <div class="card">
       <div class="card-header"><span class="card-title">All Customers</span></div>
       <input class="search-box" id="customer-search" placeholder="Search by name or phone..." oninput="filterCustomers()">
-      <div class="table-wrap">
-        <table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Added</th><th></th></tr></thead>
-        <tbody id="customers-table"><tr><td colspan="5"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody></table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Added</th><th></th></tr></thead><tbody id="customers-table"></tbody></table></div>
     </div>
   </div>
   <!-- TECHNICIANS -->
@@ -291,19 +299,22 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       <div><div class="page-title">Technicians</div><div class="page-sub" id="techs-sub">Loading...</div></div>
       <button class="btn btn-primary" onclick="openAddTechPanel()">+ Add Tech</button>
     </div>
-    <div class="tech-grid" id="techs-grid" style="margin-bottom:16px"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    <div class="tech-grid" id="techs-grid" style="margin-bottom:16px"></div>
+  </div>
+  <!-- ESTIMATES -->
+  <div class="page" id="page-estimates">
+    <div class="page-header">
+      <div><div class="page-title">Estimates</div><div class="page-sub" id="estimates-sub">Loading...</div></div>
+      <button class="btn btn-primary" onclick="openNewEstimatePanel()">+ New Estimate</button>
+    </div>
+    <div id="estimates-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>
   </div>
   <!-- INVOICES -->
   <div class="page" id="page-invoices">
-    <div class="page-header">
-      <div><div class="page-title">Invoices</div><div class="page-sub" id="invoices-sub">Loading...</div></div>
-    </div>
+    <div class="page-header"><div><div class="page-title">Invoices</div><div class="page-sub" id="invoices-sub">Loading...</div></div></div>
     <div class="card">
       <div class="card-header"><span class="card-title">All Jobs</span></div>
-      <div class="table-wrap">
-        <table><thead><tr><th>Job</th><th>Customer</th><th>Service</th><th>Status</th><th>Amount</th><th>Paid</th><th>Date</th></tr></thead>
-        <tbody id="invoices-table"><tr><td colspan="7"><div class="loading"><div class="spinner"></div> Loading...</div></td></tr></tbody></table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Job</th><th>Customer</th><th>Service</th><th>Status</th><th>Amount</th><th>Paid</th><th>Date</th></tr></thead><tbody id="invoices-table"></tbody></table></div>
     </div>
   </div>
   <!-- AI CALLS -->
@@ -320,7 +331,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Recent Calls</span><button class="btn btn-outline btn-sm" onclick="loadCalls()">↻ Refresh</button></div>
-      <div id="calls-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+      <div id="calls-list"></div>
     </div>
   </div>
   <!-- REPORTS -->
@@ -342,8 +353,8 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 <div class="mobile-nav">
   <div class="mobile-nav-items">
     <div class="mobile-nav-item active" onclick="nav('dashboard',this)"><div class="mobile-nav-icon">◼</div>Home</div>
-    <div class="mobile-nav-item" onclick="nav('dispatch',this)"><div class="mobile-nav-icon">📋</div>Dispatch</div>
-    <div class="mobile-nav-item" onclick="nav('techs',this)"><div class="mobile-nav-icon">👷</div>Techs</div>
+    <div class="mobile-nav-item" onclick="nav('dispatch',this)"><div class="mobile-nav-icon">📋</div>Jobs</div>
+    <div class="mobile-nav-item" onclick="nav('estimates',this)"><div class="mobile-nav-icon">📄</div>Estimates</div>
     <div class="mobile-nav-item" onclick="nav('customers',this)"><div class="mobile-nav-icon">👥</div>Customers</div>
     <div class="mobile-nav-item" onclick="nav('calls',this)"><div class="mobile-nav-icon">📞</div>Calls</div>
   </div>
@@ -354,26 +365,36 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 <div class="slide-panel" id="job-panel">
   <div class="panel-header"><div class="panel-title" id="panel-title">Job Details</div><button class="panel-close" onclick="closePanel('job')">×</button></div>
   <div class="panel-body" id="panel-body"></div>
-  <div class="panel-footer"><button class="btn btn-primary" onclick="saveJob()" id="save-btn">Save Changes</button><button class="btn btn-outline" onclick="closePanel('job')">Cancel</button></div>
+  <div class="panel-footer"><button class="btn btn-primary" onclick="saveJob()" id="save-btn">Save</button><button class="btn btn-outline" onclick="closePanel('job')">Cancel</button></div>
 </div>
-
 <!-- CUSTOMER PANEL -->
 <div class="panel-overlay" id="customer-overlay" onclick="closePanel('customer')"></div>
 <div class="slide-panel" id="customer-panel">
-  <div class="panel-header"><div class="panel-title" id="customer-panel-title">Customer Profile</div><button class="panel-close" onclick="closePanel('customer')">×</button></div>
-  <div class="panel-body" id="customer-panel-body"><div class="loading"><div class="spinner"></div> Loading...</div></div>
-  <div class="panel-footer"><button class="btn btn-primary" onclick="openNewJobForCustomer()">+ New Job</button><button class="btn btn-outline" onclick="closePanel('customer')">Close</button></div>
+  <div class="panel-header"><div class="panel-title" id="customer-panel-title">Customer</div><button class="panel-close" onclick="closePanel('customer')">×</button></div>
+  <div class="panel-body" id="customer-panel-body"></div>
+  <div class="panel-footer"><button class="btn btn-primary" onclick="openNewJobForCustomer()">+ New Job</button><button class="btn btn-secondary" onclick="openEstimateForCustomer()">+ Estimate</button><button class="btn btn-outline" onclick="closePanel('customer')">Close</button></div>
 </div>
-
 <!-- TECH PANEL -->
 <div class="panel-overlay" id="tech-overlay" onclick="closePanel('tech')"></div>
 <div class="slide-panel" id="tech-panel">
   <div class="panel-header"><div class="panel-title" id="tech-panel-title">Technician</div><button class="panel-close" onclick="closePanel('tech')">×</button></div>
-  <div class="panel-body" id="tech-panel-body"><div class="loading"><div class="spinner"></div> Loading...</div></div>
-  <div class="panel-footer" id="tech-panel-footer"><button class="btn btn-primary" onclick="saveTech()" id="tech-save-btn">Save Changes</button><button class="btn btn-outline" onclick="closePanel('tech')">Cancel</button></div>
+  <div class="panel-body" id="tech-panel-body"></div>
+  <div class="panel-footer"><button class="btn btn-primary" onclick="saveTech()" id="tech-save-btn">Save</button><button class="btn btn-outline" onclick="closePanel('tech')">Cancel</button></div>
+</div>
+<!-- ESTIMATE PANEL -->
+<div class="panel-overlay" id="estimate-overlay" onclick="closePanel('estimate')"></div>
+<div class="slide-panel wide" id="estimate-panel">
+  <div class="panel-header"><div class="panel-title" id="estimate-panel-title">New Estimate</div><button class="panel-close" onclick="closePanel('estimate')">×</button></div>
+  <div class="panel-body" id="estimate-panel-body"></div>
+  <div class="panel-footer" id="estimate-panel-footer">
+    <button class="btn btn-primary" onclick="saveEstimate()" id="est-save-btn">Save Estimate</button>
+    <button class="btn btn-green" onclick="sendEstimate()" id="est-send-btn" style="display:none">📤 Send to Customer</button>
+    <button class="btn btn-secondary" onclick="convertEstimateToJob()" id="est-convert-btn" style="display:none">→ Convert to Job</button>
+    <button class="btn btn-outline" onclick="closePanel('estimate')">Cancel</button>
+  </div>
 </div>
 
-<div class="save-toast" id="save-toast">✓ Changes saved</div>
+<div class="save-toast" id="save-toast">✓ Done</div>
 
 <script>
 const SUPABASE_URL='https://bfnwuurnzvncfumsnnds.supabase.co';
@@ -386,6 +407,7 @@ function initials(n){return(n||'??').split(' ').map(w=>w[0]).join('').slice(0,2)
 function fmt(d){if(!d)return'—';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function statusPill(s){const m={scheduled:['pill-blue','Scheduled'],dispatched:['pill-amber','Dispatched'],en_route:['pill-amber','En Route'],on_site:['pill-amber','On Site'],complete:['pill-green','Complete'],cancelled:['pill-gray','Cancelled'],emergency_dispatch:['pill-red','Emergency']};const[cls,label]=m[s]||['pill-gray',s];return`<span class="pill ${cls}">${label}</span>`;}
+function estimatePill(s){const m={draft:['pill-gray','Draft'],sent:['pill-blue','Sent'],viewed:['pill-amber','Viewed'],approved:['pill-green','Approved ✓'],declined:['pill-red','Declined']};const[cls,label]=m[s]||['pill-gray',s];return`<span class="pill ${cls}">${label}</span>`;}
 function urgClass(j){if(j.status==='complete')return'complete';if(j.urgency==='emergency'||j.urgency==='urgent')return'urgent';if(j.status==='en_route'||j.status==='on_site')return'enroute';return'scheduled';}
 
 let currentPage='dashboard';
@@ -402,19 +424,21 @@ function loadPage(p){
   if(p==='schedule')loadSchedule();
   if(p==='customers')loadCustomers();
   if(p==='techs')loadTechs();
+  if(p==='estimates')loadEstimates();
   if(p==='invoices')loadInvoices();
   if(p==='calls')loadCalls();
   if(p==='reports')loadReports();
 }
 
 function closePanel(type){
-  const map={job:['overlay','job-panel'],customer:['customer-overlay','customer-panel'],tech:['tech-overlay','tech-panel']};
+  const map={job:['overlay','job-panel'],customer:['customer-overlay','customer-panel'],tech:['tech-overlay','tech-panel'],estimate:['estimate-overlay','estimate-panel']};
   const[ov,panel]=map[type]||[];
   if(ov)document.getElementById(ov).classList.remove('open');
   if(panel)document.getElementById(panel).classList.remove('open');
-  if(type==='job'){currentJob=null;}
-  if(type==='customer'){currentCustomer=null;}
-  if(type==='tech'){currentTech=null;}
+  if(type==='job')currentJob=null;
+  if(type==='customer')currentCustomer=null;
+  if(type==='tech')currentTech=null;
+  if(type==='estimate')currentEstimate=null;
 }
 
 // ── JOB PANEL ─────────────────────────────────────────────────────────────────
@@ -429,7 +453,7 @@ async function openJobPanel(jobId){
   document.getElementById('panel-title').textContent=job.customers?.name||'Job Details';
   document.getElementById('panel-body').innerHTML=`
     <div class="panel-section">
-      <div class="panel-section-title">Status ${job.source==='ai_voice'?'<span class="ai-badge">🤖 AI Booked</span>':''}</div>
+      <div class="panel-section-title">Status ${job.source==='ai_voice'?'<span class="ai-badge">🤖 AI</span>':''}</div>
       <div class="status-buttons">${statuses.map(s=>`<button class="status-btn ${job.status===s?'sel-'+s:''}" onclick="selectStatus('${s}',this)">${s.replace('_',' ')}</button>`).join('')}</div>
     </div>
     <div class="panel-section">
@@ -442,14 +466,14 @@ async function openJobPanel(jobId){
       <div class="panel-section-title">Job Details</div>
       <div class="panel-field"><div class="panel-label">Service Type</div><input class="panel-input" id="field-service" value="${job.service_type||''}"></div>
       <div class="panel-field"><div class="panel-label">Scheduled Time</div><input class="panel-input" id="field-scheduled" type="datetime-local" value="${job.scheduled_at?new Date(job.scheduled_at).toISOString().slice(0,16):''}"></div>
-      <div class="panel-field"><div class="panel-label">Assign Technician</div><select class="panel-select" id="field-tech"><option value="">— Unassigned —</option>${allTechs.map(t=>`<option value="${t.id}" ${job.technician_id===t.id?'selected':''}>${t.name}</option>`).join('')}</select></div>
+      <div class="panel-field"><div class="panel-label">Technician</div><select class="panel-select" id="field-tech"><option value="">— Unassigned —</option>${allTechs.map(t=>`<option value="${t.id}" ${job.technician_id===t.id?'selected':''}>${t.name}</option>`).join('')}</select></div>
       <div class="panel-field"><div class="panel-label">Urgency</div><select class="panel-select" id="field-urgency"><option value="normal" ${job.urgency==='normal'?'selected':''}>Normal</option><option value="urgent" ${job.urgency==='urgent'?'selected':''}>Urgent</option><option value="emergency" ${job.urgency==='emergency'?'selected':''}>Emergency</option></select></div>
       <div class="panel-field"><div class="panel-label">Notes</div><textarea class="panel-textarea" id="field-notes">${job.notes||''}</textarea></div>
     </div>
     <div class="panel-section">
       <div class="panel-section-title">Invoice</div>
       <div class="panel-field"><div class="panel-label">Amount ($)</div><input class="panel-input" id="field-amount" type="number" value="${job.invoice_amount||''}"></div>
-      <div class="panel-field"><div class="panel-label">Payment Status</div><select class="panel-select" id="field-paid"><option value="false" ${!job.invoice_paid?'selected':''}>Unpaid</option><option value="true" ${job.invoice_paid?'selected':''}>Paid ✓</option></select></div>
+      <div class="panel-field"><div class="panel-label">Payment</div><select class="panel-select" id="field-paid"><option value="false" ${!job.invoice_paid?'selected':''}>Unpaid</option><option value="true" ${job.invoice_paid?'selected':''}>Paid ✓</option></select></div>
     </div>`;
   document.getElementById('save-btn').textContent='Save Changes';
   document.getElementById('overlay').classList.add('open');
@@ -462,8 +486,7 @@ async function saveJob(){
   const btn=document.getElementById('save-btn');btn.textContent='Saving...';btn.disabled=true;
   const{error}=await db.from('jobs').update({status:currentJob._selectedStatus||currentJob.status,service_type:document.getElementById('field-service')?.value,scheduled_at:document.getElementById('field-scheduled')?.value||null,technician_id:document.getElementById('field-tech')?.value||null,urgency:document.getElementById('field-urgency')?.value,notes:document.getElementById('field-notes')?.value,invoice_amount:parseFloat(document.getElementById('field-amount')?.value)||null,invoice_paid:document.getElementById('field-paid')?.value==='true'}).eq('id',currentJob.id);
   btn.textContent='Save Changes';btn.disabled=false;
-  if(!error){showToast('✓ Job updated');closePanel('job');loadPage(currentPage);}
-  else{showToast('⚠ Error saving');console.error(error);}
+  if(!error){showToast('✓ Job updated');closePanel('job');loadPage(currentPage);}else{showToast('⚠ Error');console.error(error);}
 }
 function openNewJobPanel(customerId=null,customerName=null){
   currentJob={id:null,_isNew:true,_customerId:customerId};
@@ -480,7 +503,7 @@ function openNewJobPanel(customerId=null,customerName=null){
       <div class="panel-section-title">Job Details</div>
       <div class="panel-field"><div class="panel-label">Service Type *</div><input class="panel-input" id="field-service" placeholder="e.g. Drain cleaning"></div>
       <div class="panel-field"><div class="panel-label">Scheduled Time</div><input class="panel-input" id="field-scheduled" type="datetime-local"></div>
-      <div class="panel-field"><div class="panel-label">Assign Technician</div><select class="panel-select" id="field-tech"><option value="">— Unassigned —</option>${allTechs.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+      <div class="panel-field"><div class="panel-label">Technician</div><select class="panel-select" id="field-tech"><option value="">— Unassigned —</option>${allTechs.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
       <div class="panel-field"><div class="panel-label">Urgency</div><select class="panel-select" id="field-urgency"><option value="normal">Normal</option><option value="urgent">Urgent</option><option value="emergency">Emergency</option></select></div>
       <div class="panel-field"><div class="panel-label">Notes</div><textarea class="panel-textarea" id="field-notes"></textarea></div>
     </div>`;
@@ -489,8 +512,7 @@ function openNewJobPanel(customerId=null,customerName=null){
   document.getElementById('job-panel').classList.add('open');
 }
 async function createNewJob(){
-  const customerId=currentJob._customerId;
-  let custId=customerId;
+  const customerId=currentJob._customerId;let custId=customerId;
   if(!customerId){
     const name=document.getElementById('field-name')?.value?.trim();
     const address=document.getElementById('field-address')?.value?.trim();
@@ -500,26 +522,26 @@ async function createNewJob(){
     custId=customer?.id;
   }
   const service=document.getElementById('field-service')?.value?.trim();
-  if(!service){showToast('⚠ Service type required');return;}
+  if(!service){showToast('⚠ Service required');return;}
   const btn=document.getElementById('save-btn');btn.textContent='Creating...';btn.disabled=true;
   const{error}=await db.from('jobs').insert({customer_id:custId,service_type:service,scheduled_at:document.getElementById('field-scheduled')?.value||null,technician_id:document.getElementById('field-tech')?.value||null,urgency:document.getElementById('field-urgency')?.value||'normal',notes:document.getElementById('field-notes')?.value||null,status:'scheduled',source:'dispatcher'});
   btn.textContent='Create Job';btn.disabled=false;
-  if(!error){showToast('✓ Job created');closePanel('job');loadPage(currentPage);}
-  else{showToast('⚠ Error creating');console.error(error);}
+  if(!error){showToast('✓ Job created');closePanel('job');loadPage(currentPage);}else{showToast('⚠ Error');console.error(error);}
 }
 
 // ── CUSTOMER PANEL ────────────────────────────────────────────────────────────
 let currentCustomer=null;
 async function openCustomerProfile(customerId){
   currentCustomer={id:customerId};
-  document.getElementById('customer-panel-title').textContent='Customer Profile';
+  document.getElementById('customer-panel-title').textContent='Customer';
   document.getElementById('customer-panel-body').innerHTML='<div class="loading"><div class="spinner"></div> Loading...</div>';
   document.getElementById('customer-overlay').classList.add('open');
   document.getElementById('customer-panel').classList.add('open');
-  const[{data:customer},{data:jobs},{data:calls}]=await Promise.all([
+  const[{data:customer},{data:jobs},{data:calls},{data:estimates}]=await Promise.all([
     db.from('customers').select('*').eq('id',customerId).single(),
     db.from('jobs').select('*,technicians(name)').eq('customer_id',customerId).order('created_at',{ascending:false}),
-    db.from('call_logs').select('*').eq('customer_id',customerId).order('created_at',{ascending:false}).limit(10),
+    db.from('call_logs').select('*').eq('customer_id',customerId).order('created_at',{ascending:false}).limit(5),
+    db.from('estimates').select('*').eq('customer_id',customerId).order('created_at',{ascending:false}),
   ]);
   currentCustomer=customer;
   const totalSpend=(jobs||[]).filter(j=>j.status==='complete').reduce((s,j)=>s+(j.invoice_amount||0),0);
@@ -527,22 +549,22 @@ async function openCustomerProfile(customerId){
   document.getElementById('customer-panel-body').innerHTML=`
     <div class="customer-hero">
       <div class="customer-avatar-lg" style="background:${colorFor(customer?.name)}">${initials(customer?.name)}</div>
-      <div><div class="customer-hero-name">${customer?.name||'Unknown'}</div><div class="customer-hero-sub">${customer?.phone||'No phone'} · Salt Lake City, UT</div><div class="customer-hero-sub" style="margin-top:4px">${customer?.address||'No address'}</div></div>
+      <div><div class="customer-hero-name">${customer?.name||'Unknown'}</div><div class="customer-hero-sub">${customer?.phone||'No phone'}</div><div class="customer-hero-sub" style="margin-top:4px">${customer?.address||'No address'}</div></div>
     </div>
     <div class="stat-row">
       <div class="stat-box"><div class="stat-box-val">${jobs?.length||0}</div><div class="stat-box-label">Total Jobs</div></div>
       <div class="stat-box"><div class="stat-box-val">${(jobs||[]).filter(j=>j.status==='complete').length}</div><div class="stat-box-label">Completed</div></div>
-      <div class="stat-box"><div class="stat-box-val">$${totalSpend.toLocaleString()}</div><div class="stat-box-label">Total Spend</div></div>
+      <div class="stat-box"><div class="stat-box-val">$${totalSpend.toLocaleString()}</div><div class="stat-box-label">Spend</div></div>
     </div>
     <div class="contact-actions">
       ${customer?.phone?`<button class="contact-btn" onclick="window.open('tel:${customer.phone}')">📞 Call</button><button class="contact-btn" onclick="window.open('sms:${customer.phone}')">💬 Text</button>`:''}
-      <button class="contact-btn" onclick="openNewJobForCustomer()">➕ New Job</button>
     </div>
     <div class="panel-section">
       <div class="panel-section-title">Job History (${jobs?.length||0})</div>
-      ${!(jobs?.length)?'<div class="empty"><div class="empty-text">No jobs yet</div></div>':(jobs||[]).map(j=>`<div class="profile-job-row ${urgClass(j)}" onclick="closePanel('customer');openJobPanel('${j.id}')"><div class="profile-job-info"><div class="profile-job-name">${j.service_type||'—'} ${j.source==='ai_voice'?'<span class="ai-badge">🤖</span>':''}</div><div class="profile-job-date">${fmt(j.scheduled_at||j.created_at)} · ${j.technicians?.name||'Unassigned'}</div></div>${statusPill(j.status)}${j.invoice_amount?`<div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--blue);margin-left:8px">$${j.invoice_amount.toLocaleString()}</div>`:''}</div>`).join('')}
+      ${!(jobs?.length)?'<div class="empty"><div class="empty-text">No jobs yet</div></div>':(jobs||[]).map(j=>`<div class="profile-job-row ${urgClass(j)}" onclick="closePanel('customer');openJobPanel('${j.id}')"><div class="profile-job-info"><div class="profile-job-name">${j.service_type||'—'} ${j.source==='ai_voice'?'<span class="ai-badge">🤖</span>':''}</div><div class="profile-job-date">${fmt(j.scheduled_at||j.created_at)} · ${j.technicians?.name||'Unassigned'}</div></div>${statusPill(j.status)}</div>`).join('')}
     </div>
-    ${calls?.length?`<div class="panel-section"><div class="panel-section-title">Call History (${calls.length})</div>${calls.map(c=>`<div class="call-row"><div class="call-icon" style="background:${c.outcome==='booked'?'var(--green-light)':'var(--red-light)'}">${c.outcome==='booked'?'📞':'📵'}</div><div class="call-info"><div class="call-name">${c.outcome==='booked'?'Job Booked':'No booking'}</div><div class="call-detail">${c.summary||'AI call'}</div></div><div class="call-meta"><div class="call-time">${fmt(c.created_at)}</div></div></div>`).join('')}</div>`:''}
+    ${estimates?.length?`<div class="panel-section"><div class="panel-section-title">Estimates (${estimates.length})</div>${estimates.map(e=>`<div class="profile-job-row" onclick="closePanel('customer');openExistingEstimate('${e.id}')"><div class="profile-job-info"><div class="profile-job-name">${e.title||'Estimate'}</div><div class="profile-job-date">${fmtDate(e.created_at)} · $${(e.total||0).toLocaleString()}</div></div>${estimatePill(e.status)}</div>`).join('')}</div>`:''}
+    ${calls?.length?`<div class="panel-section"><div class="panel-section-title">Call History</div>${calls.map(c=>`<div class="call-row"><div class="call-icon" style="background:${c.outcome==='booked'?'var(--green-light)':'var(--red-light)'}">${c.outcome==='booked'?'📞':'📵'}</div><div class="call-info"><div class="call-name">${c.outcome==='booked'?'Booked':'No booking'}</div><div class="call-detail">${c.summary||'AI call'}</div></div><div class="call-meta"><div class="call-time">${fmt(c.created_at)}</div></div></div>`).join('')}</div>`:''}
     <div class="panel-section">
       <div class="panel-section-title">Notes</div>
       <textarea class="panel-textarea" id="customer-notes" placeholder="Add notes...">${customer?.notes||''}</textarea>
@@ -551,6 +573,7 @@ async function openCustomerProfile(customerId){
 }
 async function saveCustomerNotes(){if(!currentCustomer?.id)return;await db.from('customers').update({notes:document.getElementById('customer-notes')?.value}).eq('id',currentCustomer.id);showToast('✓ Notes saved');}
 function openNewJobForCustomer(){closePanel('customer');openNewJobPanel(currentCustomer?.id,currentCustomer?.name);}
+function openEstimateForCustomer(){closePanel('customer');openNewEstimatePanel(currentCustomer);}
 
 // ── TECH PANEL ────────────────────────────────────────────────────────────────
 let currentTech=null;
@@ -566,75 +589,64 @@ async function openTechPanel(techId){
     db.from('availability_slots').select('*').eq('technician_id',techId).gte('starts_at',new Date().toISOString()).order('starts_at').limit(14),
   ]);
   currentTech=tech;
-  const completedCount=await db.from('jobs').select('*',{count:'exact',head:true}).eq('technician_id',techId).eq('status','complete');
-  document.getElementById('tech-panel-title').textContent=tech?.name||'Technician';
+  const{count:completedCount}=await db.from('jobs').select('*',{count:'exact',head:true}).eq('technician_id',techId).eq('status','complete');
+  document.getElementById('tech-panel-title').textContent=tech?.name||'Tech';
   document.getElementById('tech-panel-body').innerHTML=`
     <div class="tech-hero">
       <div class="tech-hero-avatar" style="background:${colorFor(tech?.name)}">${initials(tech?.name)}</div>
-      <div><div class="tech-hero-name">${tech?.name||'Unknown'}</div><div class="tech-hero-sub">${tech?.phone||'No phone'}</div><div class="tech-hero-sub" style="margin-top:4px">${tech?.email||'No email'}</div></div>
+      <div><div class="tech-hero-name">${tech?.name||'Unknown'}</div><div class="tech-hero-sub">${tech?.phone||'No phone'}</div><div class="tech-hero-sub">${tech?.email||'No email'}</div></div>
     </div>
     <div class="stat-row">
-      <div class="stat-box"><div class="stat-box-val">${jobs?.length||0}</div><div class="stat-box-label">Active Jobs</div></div>
-      <div class="stat-box"><div class="stat-box-val">${completedCount?.count||0}</div><div class="stat-box-label">Completed</div></div>
-      <div class="stat-box"><div class="stat-box-val">${slots?.length||0}</div><div class="stat-box-label">Open Slots</div></div>
+      <div class="stat-box"><div class="stat-box-val">${jobs?.length||0}</div><div class="stat-box-label">Active</div></div>
+      <div class="stat-box"><div class="stat-box-val">${completedCount||0}</div><div class="stat-box-label">Done</div></div>
+      <div class="stat-box"><div class="stat-box-val">${slots?.length||0}</div><div class="stat-box-label">Slots</div></div>
     </div>
     <div class="panel-section">
       <div class="panel-section-title">Edit Info</div>
       <div class="panel-field"><div class="panel-label">Name</div><input class="panel-input" id="tech-name" value="${tech?.name||''}"></div>
       <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="tech-phone" value="${tech?.phone||''}"></div>
       <div class="panel-field"><div class="panel-label">Email</div><input class="panel-input" id="tech-email" value="${tech?.email||''}"></div>
-      <div class="panel-field"><div class="panel-label">Status</div>
-        <select class="panel-select" id="tech-status">
-          <option value="available" ${tech?.status==='available'?'selected':''}>Available</option>
-          <option value="on_job" ${tech?.status==='on_job'?'selected':''}>On Job</option>
-          <option value="off_duty" ${tech?.status==='off_duty'?'selected':''}>Off Duty</option>
-        </select>
-      </div>
-      <div class="panel-field" style="display:flex;align-items:center;gap:10px">
-        <div class="panel-label" style="margin:0">On-Call</div>
-        <label class="toggle-switch"><input type="checkbox" id="tech-oncall" ${tech?.is_oncall?'checked':''}><span class="toggle-slider"></span></label>
-        <div style="font-size:12px;color:var(--muted)">Aria will escalate emergencies to on-call tech</div>
-      </div>
+      <div class="panel-field"><div class="panel-label">Status</div><select class="panel-select" id="tech-status"><option value="available" ${tech?.status==='available'?'selected':''}>Available</option><option value="on_job" ${tech?.status==='on_job'?'selected':''}>On Job</option><option value="off_duty" ${tech?.status==='off_duty'?'selected':''}>Off Duty</option></select></div>
+      <div class="panel-field" style="display:flex;align-items:center;gap:10px"><div class="panel-label" style="margin:0">On-Call</div><label class="toggle-switch"><input type="checkbox" id="tech-oncall" ${tech?.is_oncall?'checked':''}><span class="toggle-slider"></span></label></div>
     </div>
     <div class="panel-section">
-      <div class="panel-section-title">Active Jobs (${jobs?.length||0})</div>
+      <div class="panel-section-title">Active Jobs</div>
       ${!(jobs?.length)?'<div class="empty"><div class="empty-text">No active jobs</div></div>':(jobs||[]).map(j=>`<div class="profile-job-row ${urgClass(j)}" onclick="closePanel('tech');openJobPanel('${j.id}')"><div class="profile-job-info"><div class="profile-job-name">${j.customers?.name||'Unknown'}</div><div class="profile-job-date">${j.service_type||'—'} · ${fmt(j.scheduled_at)}</div></div>${statusPill(j.status)}</div>`).join('')}
     </div>
     <div class="panel-section">
-      <div class="panel-section-title">Upcoming Availability Slots</div>
+      <div class="panel-section-title">Availability Slots</div>
       ${!(slots?.length)?'<div class="empty"><div class="empty-text">No upcoming slots</div></div>':(slots||[]).map(s=>`<div class="slot-row"><div class="slot-row-info"><div style="font-size:13px;font-weight:600">${new Date(s.starts_at).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div><div class="slot-time">${new Date(s.starts_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})} — ${new Date(s.ends_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div></div><span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span>${!s.booked?`<button class="btn btn-danger btn-sm" onclick="deleteSlot('${s.id}')">✕</button>`:''}</div>`).join('')}
-      <div class="add-slot-row" style="margin-top:12px">
-        <input class="panel-input" id="new-slot-start" type="datetime-local" placeholder="Start">
-        <input class="panel-input" id="new-slot-end" type="datetime-local" placeholder="End">
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input class="panel-input" id="new-slot-start" type="datetime-local">
+        <input class="panel-input" id="new-slot-end" type="datetime-local">
         <button class="btn btn-secondary btn-sm" onclick="addSlot('${techId}')">+ Add</button>
       </div>
     </div>`;
 }
-
 async function saveTech(){
-  if(!currentTech?.id)return;
+  if(!currentTech)return;
+  if(currentTech._isNew){
+    const name=document.getElementById('tech-name')?.value?.trim();
+    if(!name){showToast('⚠ Name required');return;}
+    const btn=document.getElementById('tech-save-btn');btn.textContent='Adding...';btn.disabled=true;
+    const{error}=await db.from('technicians').insert({name,phone:document.getElementById('tech-phone')?.value||null,email:document.getElementById('tech-email')?.value||null,status:document.getElementById('tech-status')?.value||'available',is_oncall:document.getElementById('tech-oncall')?.checked||false});
+    btn.textContent='Add Technician';btn.disabled=false;
+    if(!error){showToast('✓ Tech added');closePanel('tech');loadTechs();}else{showToast('⚠ Error');console.error(error);}
+    return;
+  }
   const btn=document.getElementById('tech-save-btn');btn.textContent='Saving...';btn.disabled=true;
   const{error}=await db.from('technicians').update({name:document.getElementById('tech-name')?.value,phone:document.getElementById('tech-phone')?.value,email:document.getElementById('tech-email')?.value,status:document.getElementById('tech-status')?.value,is_oncall:document.getElementById('tech-oncall')?.checked}).eq('id',currentTech.id);
-  btn.textContent='Save Changes';btn.disabled=false;
-  if(!error){showToast('✓ Technician updated');closePanel('tech');loadPage(currentPage);}
-  else{showToast('⚠ Error saving');console.error(error);}
+  btn.textContent='Save';btn.disabled=false;
+  if(!error){showToast('✓ Saved');closePanel('tech');loadPage(currentPage);}else{showToast('⚠ Error');console.error(error);}
 }
-
-async function deleteSlot(slotId){
-  await db.from('availability_slots').delete().eq('id',slotId);
-  showToast('✓ Slot removed');
-  openTechPanel(currentTech.id);
-}
-
+async function deleteSlot(slotId){await db.from('availability_slots').delete().eq('id',slotId);showToast('✓ Slot removed');openTechPanel(currentTech.id);}
 async function addSlot(techId){
   const start=document.getElementById('new-slot-start')?.value;
   const end=document.getElementById('new-slot-end')?.value;
-  if(!start||!end){showToast('⚠ Set start and end time');return;}
+  if(!start||!end){showToast('⚠ Set start and end');return;}
   const{error}=await db.from('availability_slots').insert({technician_id:techId,starts_at:start,ends_at:end,booked:false});
-  if(!error){showToast('✓ Slot added');openTechPanel(techId);}
-  else{showToast('⚠ Error adding slot');console.error(error);}
+  if(!error){showToast('✓ Slot added');openTechPanel(techId);}else{showToast('⚠ Error');console.error(error);}
 }
-
 function openAddTechPanel(){
   currentTech={id:null,_isNew:true};
   document.getElementById('tech-panel-title').textContent='Add Technician';
@@ -643,39 +655,178 @@ function openAddTechPanel(){
       <div class="panel-section-title">New Technician</div>
       <div class="panel-field"><div class="panel-label">Full Name *</div><input class="panel-input" id="tech-name" placeholder="Jake Rivera"></div>
       <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="tech-phone" placeholder="+18015550101"></div>
-      <div class="panel-field"><div class="panel-label">Email</div><input class="panel-input" id="tech-email" placeholder="jake@charliesplumbing.com"></div>
-      <div class="panel-field"><div class="panel-label">Status</div>
-        <select class="panel-select" id="tech-status">
-          <option value="available">Available</option>
-          <option value="off_duty">Off Duty</option>
-        </select>
-      </div>
-      <div class="panel-field" style="display:flex;align-items:center;gap:10px">
-        <div class="panel-label" style="margin:0">On-Call</div>
-        <label class="toggle-switch"><input type="checkbox" id="tech-oncall"><span class="toggle-slider"></span></label>
-      </div>
+      <div class="panel-field"><div class="panel-label">Email</div><input class="panel-input" id="tech-email"></div>
+      <div class="panel-field"><div class="panel-label">Status</div><select class="panel-select" id="tech-status"><option value="available">Available</option><option value="off_duty">Off Duty</option></select></div>
+      <div class="panel-field" style="display:flex;align-items:center;gap:10px"><div class="panel-label" style="margin:0">On-Call</div><label class="toggle-switch"><input type="checkbox" id="tech-oncall"><span class="toggle-slider"></span></label></div>
     </div>`;
   document.getElementById('tech-save-btn').textContent='Add Technician';
   document.getElementById('tech-overlay').classList.add('open');
   document.getElementById('tech-panel').classList.add('open');
 }
 
-// Override saveTech for new tech
-const _origSaveTech=saveTech;
-window.saveTech=async function(){
-  if(!currentTech)return;
-  if(currentTech._isNew){
-    const name=document.getElementById('tech-name')?.value?.trim();
-    if(!name){showToast('⚠ Name required');return;}
-    const btn=document.getElementById('tech-save-btn');btn.textContent='Adding...';btn.disabled=true;
-    const{error}=await db.from('technicians').insert({name,phone:document.getElementById('tech-phone')?.value||null,email:document.getElementById('tech-email')?.value||null,status:document.getElementById('tech-status')?.value||'available',is_oncall:document.getElementById('tech-oncall')?.checked||false});
-    btn.textContent='Add Technician';btn.disabled=false;
-    if(!error){showToast('✓ Technician added');closePanel('tech');loadTechs();}
-    else{showToast('⚠ Error adding');console.error(error);}
-    return;
+// ── ESTIMATE PANEL ────────────────────────────────────────────────────────────
+let currentEstimate=null;
+let estimateLineItems=[];
+
+function openNewEstimatePanel(prefillCustomer=null){
+  currentEstimate={id:null,_isNew:true};
+  estimateLineItems=[{desc:'',qty:1,unit_price:0}];
+  document.getElementById('estimate-panel-title').textContent='New Estimate';
+  document.getElementById('est-save-btn').style.display='';
+  document.getElementById('est-send-btn').style.display='none';
+  document.getElementById('est-convert-btn').style.display='none';
+  renderEstimatePanel(prefillCustomer);
+  document.getElementById('estimate-overlay').classList.add('open');
+  document.getElementById('estimate-panel').classList.add('open');
+}
+
+async function openExistingEstimate(estimateId){
+  const{data:est}=await db.from('estimates').select('*,customers(name,phone,email)').eq('id',estimateId).single();
+  if(!est)return;
+  currentEstimate=est;
+  estimateLineItems=est.line_items||[{desc:'',qty:1,unit_price:0}];
+  document.getElementById('estimate-panel-title').textContent='Estimate — '+est.title;
+  document.getElementById('est-save-btn').style.display='';
+  document.getElementById('est-send-btn').style.display=est.status==='draft'?'':'none';
+  document.getElementById('est-convert-btn').style.display=est.status==='approved'?'':'none';
+  renderEstimatePanel(est.customers);
+  document.getElementById('estimate-overlay').classList.add('open');
+  document.getElementById('estimate-panel').classList.add('open');
+}
+
+function renderEstimatePanel(prefillCustomer=null){
+  const est=currentEstimate||{};
+  document.getElementById('estimate-panel-body').innerHTML=`
+    <div class="panel-section">
+      <div class="panel-section-title">Customer</div>
+      ${prefillCustomer?.id||est.customer_id?`<div class="panel-field"><div class="panel-label">Customer</div><div class="panel-value">${prefillCustomer?.name||est.customers?.name||'—'}</div></div><input type="hidden" id="est-customer-id" value="${prefillCustomer?.id||est.customer_id||''}">`:
+      `<div class="panel-field"><div class="panel-label">Customer Name *</div><input class="panel-input" id="est-cust-name" value="${est.customers?.name||''}" placeholder="Full name"></div>
+       <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="est-cust-phone" value="${prefillCustomer?.phone||est.customers?.phone||''}" placeholder="(801) 555-0100"></div>
+       <div class="panel-field"><div class="panel-label">Email (for sending)</div><input class="panel-input" id="est-cust-email" value="${prefillCustomer?.email||est.customers?.email||''}" placeholder="customer@email.com"></div>`}
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Estimate Info</div>
+      <div class="panel-field"><div class="panel-label">Title *</div><input class="panel-input" id="est-title" value="${est.title||''}" placeholder="e.g. Water heater replacement"></div>
+      <div class="panel-field"><div class="panel-label">Notes / Description</div><textarea class="panel-textarea" id="est-notes" placeholder="Scope of work, terms, etc.">${est.notes||''}</textarea></div>
+      <div class="panel-field"><div class="panel-label">Valid Until</div><input class="panel-input" id="est-valid" type="date" value="${est.valid_until||''}"></div>
+      <div class="panel-field"><div class="panel-label">Tax Rate (%)</div><input class="panel-input" id="est-tax" type="number" value="${est.tax_rate||0}" min="0" max="100" step="0.1" oninput="recalcTotals()"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Line Items</div>
+      <table class="line-items-table" id="line-items-table">
+        <thead><tr><th style="width:40%">Description</th><th style="width:15%">Qty</th><th style="width:20%">Unit Price</th><th style="width:15%">Total</th><th style="width:10%"></th></tr></thead>
+        <tbody id="line-items-body"></tbody>
+      </table>
+      <button class="btn btn-outline btn-sm" onclick="addLineItem()">+ Add Line Item</button>
+    </div>
+    <div class="estimate-totals">
+      <div class="estimate-total-row"><span>Subtotal</span><span id="est-subtotal">$0.00</span></div>
+      <div class="estimate-total-row"><span>Tax (<span id="est-tax-pct">0</span>%)</span><span id="est-tax-amt">$0.00</span></div>
+      <div class="estimate-total-row grand"><span>TOTAL</span><span id="est-total">$0.00</span></div>
+    </div>`;
+  renderLineItems();
+  recalcTotals();
+}
+
+function renderLineItems(){
+  const tbody=document.getElementById('line-items-body');
+  if(!tbody)return;
+  tbody.innerHTML=estimateLineItems.map((item,i)=>`
+    <tr>
+      <td><input type="text" value="${item.desc||''}" placeholder="Service or part description" onchange="updateItem(${i},'desc',this.value)"></td>
+      <td><input type="number" value="${item.qty||1}" min="0.5" step="0.5" style="width:70px" onchange="updateItem(${i},'qty',parseFloat(this.value)||1)"></td>
+      <td><input type="number" value="${item.unit_price||0}" min="0" step="0.01" style="width:90px" onchange="updateItem(${i},'unit_price',parseFloat(this.value)||0)"></td>
+      <td style="font-weight:600;font-family:'DM Mono',monospace">$${((item.qty||1)*(item.unit_price||0)).toFixed(2)}</td>
+      <td><button onclick="removeItem(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button></td>
+    </tr>`).join('');
+}
+
+function updateItem(i,field,val){estimateLineItems[i][field]=val;renderLineItems();recalcTotals();}
+function addLineItem(){estimateLineItems.push({desc:'',qty:1,unit_price:0});renderLineItems();recalcTotals();}
+function removeItem(i){estimateLineItems.splice(i,1);if(!estimateLineItems.length)estimateLineItems=[{desc:'',qty:1,unit_price:0}];renderLineItems();recalcTotals();}
+
+function recalcTotals(){
+  const subtotal=estimateLineItems.reduce((s,item)=>s+(item.qty||1)*(item.unit_price||0),0);
+  const taxRate=parseFloat(document.getElementById('est-tax')?.value||0);
+  const taxAmt=subtotal*taxRate/100;
+  const total=subtotal+taxAmt;
+  const fmt2=v=>'$'+v.toFixed(2);
+  if(document.getElementById('est-subtotal'))document.getElementById('est-subtotal').textContent=fmt2(subtotal);
+  if(document.getElementById('est-tax-pct'))document.getElementById('est-tax-pct').textContent=taxRate;
+  if(document.getElementById('est-tax-amt'))document.getElementById('est-tax-amt').textContent=fmt2(taxAmt);
+  if(document.getElementById('est-total'))document.getElementById('est-total').textContent=fmt2(total);
+  return{subtotal,taxAmt,total,taxRate};
+}
+
+async function saveEstimate(){
+  const totals=recalcTotals();
+  const title=document.getElementById('est-title')?.value?.trim();
+  if(!title){showToast('⚠ Title required');return;}
+
+  let customerId=document.getElementById('est-customer-id')?.value||currentEstimate?.customer_id||null;
+  if(!customerId){
+    const name=document.getElementById('est-cust-name')?.value?.trim();
+    if(!name){showToast('⚠ Customer name required');return;}
+    const phone=document.getElementById('est-cust-phone')?.value?.trim();
+    const email=document.getElementById('est-cust-email')?.value?.trim();
+    const{data:customer}=await db.from('customers').upsert({name,phone:phone||null,email:email||null},{onConflict:'phone',ignoreDuplicates:false}).select().single();
+    customerId=customer?.id;
+    if(email&&customer?.id)await db.from('customers').update({email}).eq('id',customer.id);
   }
-  await _origSaveTech();
-};
+
+  const btn=document.getElementById('est-save-btn');btn.textContent='Saving...';btn.disabled=true;
+  const payload={customer_id:customerId,title,notes:document.getElementById('est-notes')?.value,valid_until:document.getElementById('est-valid')?.value||null,tax_rate:parseFloat(document.getElementById('est-tax')?.value)||0,line_items:estimateLineItems,subtotal:totals.subtotal,tax_amount:totals.taxAmt,total:totals.total,status:currentEstimate?.status||'draft'};
+
+  let error;
+  if(currentEstimate?.id){
+    ({error}=await db.from('estimates').update(payload).eq('id',currentEstimate.id));
+  } else {
+    const{data,error:e}=await db.from('estimates').insert(payload).select().single();
+    error=e;if(data)currentEstimate=data;
+  }
+
+  btn.textContent='Save Estimate';btn.disabled=false;
+  if(!error){
+    showToast('✓ Estimate saved');
+    document.getElementById('est-send-btn').style.display='';
+    loadPage(currentPage);
+  } else {showToast('⚠ Error saving');console.error(error);}
+}
+
+async function sendEstimate(){
+  if(!currentEstimate?.id){showToast('⚠ Save first');return;}
+  const{data:est}=await db.from('estimates').select('*,customers(name,phone,email)').eq('id',currentEstimate.id).single();
+  const customerPhone=est?.customers?.phone;
+  const customerName=est?.customers?.name;
+
+  // Update status to sent
+  await db.from('estimates').update({status:'sent',sent_at:new Date().toISOString()}).eq('id',currentEstimate.id);
+
+  // Send SMS with estimate link
+  if(customerPhone){
+    const estimateUrl=`${window.location.origin}${window.location.pathname}estimate.html?id=${currentEstimate.id}`;
+    try{
+      await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({to:customerPhone,body:`Hi ${customerName}, Charlie's Plumbing sent you an estimate for $${(est.total||0).toLocaleString()}. View and approve here: ${estimateUrl} — Questions? Call (801) 406-8585.`})
+      });
+      showToast('✓ Estimate sent via SMS!');
+    } catch(e){showToast('✓ Status updated (SMS blocked in trial)');}
+  } else {
+    showToast('✓ Marked as sent (no phone on file)');
+  }
+  loadEstimates();
+}
+
+async function convertEstimateToJob(){
+  if(!currentEstimate?.id)return;
+  const{data:est}=await db.from('estimates').select('*,customers(name)').eq('id',currentEstimate.id).single();
+  closePanel('estimate');
+  openNewJobPanel(est.customer_id,est.customers?.name);
+  // Pre-fill service with estimate title
+  setTimeout(()=>{const f=document.getElementById('field-service');if(f)f.value=est.title;},100);
+  showToast('Fill in job details and click Create Job');
+}
 
 // ── LOAD FUNCTIONS ────────────────────────────────────────────────────────────
 function jobRowHTML(j){return`<div class="job-row ${urgClass(j)}" onclick="openJobPanel('${j.id}')"><div class="job-avatar" style="background:${colorFor(j.customers?.name)}">${initials(j.customers?.name)}</div><div><div class="job-name">${j.customers?.name||'Unknown'}${j.source==='ai_voice'?'<span class="ai-badge">🤖</span>':''}</div><div class="job-detail">${j.service_type||'—'} · ${j.address||j.customers?.address||'—'}${j.technicians?.name?' · '+j.technicians.name:''}</div></div>${statusPill(j.status)}<div class="job-time">${fmt(j.scheduled_at||j.created_at)}</div><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openJobPanel('${j.id}')">Manage</button></div>`;}
@@ -684,54 +835,54 @@ async function loadDashboard(){
   const now=new Date();
   document.getElementById('dash-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const todayStart=new Date();todayStart.setHours(0,0,0,0);
-  const{data:todayJobs}=await db.from('jobs').select('*').gte('created_at',todayStart.toISOString());
+  const[{data:todayJobs},{data:openJobs},{data:mtdDone},{data:todayCalls},{data:pendingEst},{data:recent}]=await Promise.all([
+    db.from('jobs').select('*').gte('created_at',todayStart.toISOString()),
+    db.from('jobs').select('*').not('status','in','("complete","cancelled")'),
+    db.from('jobs').select('invoice_amount').gte('created_at',new Date(now.getFullYear(),now.getMonth(),1).toISOString()).eq('status','complete'),
+    db.from('call_logs').select('*').gte('created_at',todayStart.toISOString()),
+    db.from('estimates').select('*,customers(name)').in('status',['sent','viewed']).order('created_at',{ascending:false}).limit(5),
+    db.from('jobs').select('*,customers(name),technicians(name)').order('created_at',{ascending:false}).limit(5),
+  ]);
   document.getElementById('kpi-today').textContent=todayJobs?.length||0;
   document.getElementById('kpi-today-sub').textContent=`${todayJobs?.filter(j=>j.status==='complete').length||0} completed`;
-  const{data:openJobs}=await db.from('jobs').select('*').not('status','in','("complete","cancelled")');
   document.getElementById('kpi-open').textContent=openJobs?.length||0;
   document.getElementById('kpi-open-sub').textContent=`${openJobs?.filter(j=>j.urgency==='urgent'||j.urgency==='emergency').length||0} urgent`;
   document.getElementById('badge-dispatch').textContent=openJobs?.length||0;
-  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-  const{data:mtdJobs}=await db.from('jobs').select('invoice_amount').gte('created_at',monthStart.toISOString()).eq('status','complete');
-  const rev=(mtdJobs||[]).reduce((s,j)=>s+(j.invoice_amount||0),0);
+  const rev=(mtdDone||[]).reduce((s,j)=>s+(j.invoice_amount||0),0);
   document.getElementById('kpi-revenue').textContent=rev>0?'$'+(rev/1000).toFixed(1)+'k':'$0';
-  document.getElementById('kpi-rev-sub').textContent=`${mtdJobs?.length||0} jobs completed`;
-  const{data:todayCalls}=await db.from('call_logs').select('*').gte('created_at',todayStart.toISOString());
+  document.getElementById('kpi-rev-sub').textContent=`${mtdDone?.length||0} jobs completed`;
   const booked=(todayCalls||[]).filter(c=>c.outcome==='booked').length;
   document.getElementById('kpi-calls').textContent=todayCalls?.length||0;
   document.getElementById('kpi-calls-sub').textContent=`${booked} booked`;
   document.getElementById('badge-calls').textContent=booked;
-  const{data:techs}=await db.from('technicians').select('*');
-  allTechs=techs||[];
-  const activeTechs=(techs||[]).filter(t=>t.status!=='off_duty');
-  document.getElementById('kpi-techs').textContent=activeTechs.length;
-  document.getElementById('kpi-techs-sub').textContent=`${(techs||[]).filter(t=>t.is_oncall).length} on-call`;
-  const{data:recent}=await db.from('jobs').select('*,customers(name),technicians(name)').order('created_at',{ascending:false}).limit(5);
+  document.getElementById('kpi-estimates').textContent=pendingEst?.length||0;
+  document.getElementById('kpi-est-sub').textContent='awaiting approval';
+  document.getElementById('badge-estimates').textContent=pendingEst?.length||0;
   const je=document.getElementById('dash-jobs');
   je.innerHTML=recent?.length?recent.map(jobRowHTML).join(''):'<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No jobs yet</div></div>';
-  const te=document.getElementById('dash-techs');
-  te.innerHTML=techs?.length?techs.map(t=>`<div class="tech-card" onclick="openTechPanel('${t.id}')"><div class="tech-avatar-lg" style="background:${colorFor(t.name)}">${initials(t.name)}</div><div class="tech-name">${t.name}${t.is_oncall?'<span class="oncall-badge">On-Call</span>':''}</div><div class="tech-role">${t.status||'available'}</div></div>`).join(''):'<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">No techs</div></div>';
+  const de=document.getElementById('dash-estimates');
+  de.innerHTML=pendingEst?.length?(pendingEst||[]).map(e=>`<div class="profile-job-row scheduled" onclick="openExistingEstimate('${e.id}')" style="margin-bottom:6px"><div class="profile-job-info"><div class="profile-job-name">${e.customers?.name||'Unknown'} — ${e.title}</div><div class="profile-job-date">$${(e.total||0).toLocaleString()} · ${fmtDate(e.created_at)}</div></div>${estimatePill(e.status)}</div>`).join(''):'<div class="empty"><div class="empty-text">No pending estimates</div></div>';
+  const{data:techs}=await db.from('technicians').select('*');
+  allTechs=techs||[];
   document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
 async function loadDispatch(){
   const{data:jobs}=await db.from('jobs').select('*,customers(name,phone),technicians(name)').not('status','in','("complete","cancelled")').order('created_at',{ascending:false});
   document.getElementById('dispatch-sub').textContent=`${jobs?.length||0} active jobs`;
-  const el=document.getElementById('dispatch-jobs');
-  el.innerHTML=jobs?.length?jobs.map(jobRowHTML).join(''):'<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No active jobs!</div></div>';
+  document.getElementById('dispatch-jobs').innerHTML=jobs?.length?jobs.map(jobRowHTML).join(''):'<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All clear!</div></div>';
 }
 
 async function loadSchedule(){
   const{data:slots}=await db.from('availability_slots').select('*,technicians(name)').gte('starts_at',new Date().toISOString()).order('starts_at').limit(20);
-  const el=document.getElementById('schedule-content');
-  el.innerHTML=slots?.length?`<div class="job-list">${slots.map(s=>`<div class="job-row ${s.booked?'complete':'scheduled'}" onclick="openTechPanel('${s.technician_id}')"><div class="job-avatar" style="background:${colorFor(s.technicians?.name)}">${initials(s.technicians?.name)}</div><div><div class="job-name">${s.technicians?.name||'Unknown'}</div><div class="job-detail">${fmt(s.starts_at)} — ${fmt(s.ends_at)}</div></div><span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span></div>`).join('')}</div>`:'<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No upcoming slots.</div></div>';
+  document.getElementById('schedule-content').innerHTML=slots?.length?`<div class="job-list">${slots.map(s=>`<div class="job-row ${s.booked?'complete':'scheduled'}" onclick="openTechPanel('${s.technician_id}')"><div class="job-avatar" style="background:${colorFor(s.technicians?.name)}">${initials(s.technicians?.name)}</div><div><div class="job-name">${s.technicians?.name||'Unknown'}</div><div class="job-detail">${fmt(s.starts_at)} — ${fmt(s.ends_at)}</div></div><span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span></div>`).join('')}</div>`:'<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No upcoming slots.</div></div>';
 }
 
 let allCustomers=[];
 async function loadCustomers(){
   const{data:customers,count}=await db.from('customers').select('*',{count:'exact'}).order('created_at',{ascending:false});
   allCustomers=customers||[];
-  document.getElementById('customers-sub').textContent=`${count||0} total customers`;
+  document.getElementById('customers-sub').textContent=`${count||0} total`;
   renderCustomers(allCustomers);
 }
 function renderCustomers(customers){
@@ -744,28 +895,29 @@ function filterCustomers(){const q=document.getElementById('customer-search')?.v
 async function loadTechs(){
   const{data:techs}=await db.from('technicians').select('*').order('name');
   allTechs=techs||[];
-  document.getElementById('techs-sub').textContent=`${techs?.length||0} technicians · ${(techs||[]).filter(t=>t.status!=='off_duty').length} active`;
+  document.getElementById('techs-sub').textContent=`${techs?.length||0} techs · ${(techs||[]).filter(t=>t.status!=='off_duty').length} active`;
   const grid=document.getElementById('techs-grid');
-  if(!techs?.length){grid.innerHTML='<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">No technicians yet. Add your first tech.</div></div>';return;}
-  // Get job counts per tech
+  if(!techs?.length){grid.innerHTML='<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">No techs yet.</div></div>';return;}
   const{data:jobCounts}=await db.from('jobs').select('technician_id').not('status','in','("complete","cancelled")');
   const counts={};(jobCounts||[]).forEach(j=>{if(j.technician_id)counts[j.technician_id]=(counts[j.technician_id]||0)+1;});
   const{data:completedCounts}=await db.from('jobs').select('technician_id').eq('status','complete');
   const completed={};(completedCounts||[]).forEach(j=>{if(j.technician_id)completed[j.technician_id]=(completed[j.technician_id]||0)+1;});
-  grid.innerHTML=techs.map(t=>`
-    <div class="tech-card" onclick="openTechPanel('${t.id}')">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
-        <div class="tech-avatar-lg" style="background:${colorFor(t.name)}">${initials(t.name)}</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-          <span class="pill ${t.status==='available'?'pill-green':t.status==='on_job'?'pill-amber':'pill-gray'}">${t.status||'available'}</span>
-          ${t.is_oncall?'<span class="oncall-badge">On-Call</span>':''}
-        </div>
-      </div>
-      <div class="tech-name">${t.name}</div>
-      <div class="tech-role">${t.phone||'No phone'}</div>
-      <div class="tech-stats-row">
-        <div class="tech-stat"><div class="tech-stat-val">${counts[t.id]||0}</div><div class="tech-stat-label">Active</div></div>
-        <div class="tech-stat"><div class="tech-stat-val">${completed[t.id]||0}</div><div class="tech-stat-label">Done</div></div>
+  grid.innerHTML=techs.map(t=>`<div class="tech-card" onclick="openTechPanel('${t.id}')"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px"><div class="tech-avatar-lg" style="background:${colorFor(t.name)}">${initials(t.name)}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="pill ${t.status==='available'?'pill-green':t.status==='on_job'?'pill-amber':'pill-gray'}">${t.status||'available'}</span>${t.is_oncall?'<span style="display:inline-flex;align-items:center;gap:4px;background:#fdf0ee;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">On-Call</span>':''}</div></div><div class="tech-name">${t.name}</div><div class="tech-role">${t.phone||'No phone'}</div><div class="tech-stats-row"><div class="tech-stat"><div class="tech-stat-val">${counts[t.id]||0}</div><div class="tech-stat-label">Active</div></div><div class="tech-stat"><div class="tech-stat-val">${completed[t.id]||0}</div><div class="tech-stat-label">Done</div></div></div></div>`).join('');
+}
+
+async function loadEstimates(){
+  const{data:estimates}=await db.from('estimates').select('*,customers(name)').order('created_at',{ascending:false});
+  const pending=(estimates||[]).filter(e=>['sent','viewed'].includes(e.status)).length;
+  document.getElementById('estimates-sub').textContent=`${estimates?.length||0} total · ${pending} awaiting approval`;
+  document.getElementById('badge-estimates').textContent=pending||'—';
+  const el=document.getElementById('estimates-list');
+  if(!estimates?.length){el.innerHTML='<div class="empty"><div class="empty-icon">📄</div><div class="empty-text">No estimates yet. Create one with + New Estimate.</div></div>';return;}
+  el.innerHTML=estimates.map(e=>`
+    <div class="estimate-card" onclick="openExistingEstimate('${e.id}')">
+      <div class="estimate-card-header">
+        <div class="job-avatar" style="background:${colorFor(e.customers?.name)}">${initials(e.customers?.name)}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700">${e.customers?.name||'Unknown'} — ${e.title||'Estimate'}</div><div style="font-size:12px;color:var(--muted)">${fmtDate(e.created_at)}${e.valid_until?' · Valid until '+fmtDate(e.valid_until):''}</div></div>
+        <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--blue)">$${(e.total||0).toLocaleString()}</div>${estimatePill(e.status)}</div>
       </div>
     </div>`).join('');
 }
@@ -775,15 +927,14 @@ async function loadInvoices(){
   const outstanding=(jobs||[]).filter(j=>j.status==='complete'&&!j.invoice_paid).reduce((s,j)=>s+(j.invoice_amount||0),0);
   document.getElementById('invoices-sub').textContent=`$${outstanding.toLocaleString()} outstanding`;
   const tb=document.getElementById('invoices-table');
-  tb.innerHTML=jobs?.length?jobs.map(j=>`<tr onclick="openJobPanel('${j.id}')"><td class="td-id">#${j.id?.slice(0,8)}</td><td style="font-weight:600">${j.customers?.name||'—'}</td><td style="color:var(--muted);font-size:12px">${j.service_type||'—'}</td><td>${statusPill(j.status)}</td><td class="td-amount">${j.invoice_amount?'$'+j.invoice_amount.toLocaleString():'—'}</td><td>${j.invoice_paid?'<span class="pill pill-green">Paid</span>':'<span class="pill pill-gray">Unpaid</span>'}</td><td style="color:var(--muted);font-size:12px">${fmtDate(j.created_at)}</td></tr>`).join(''):'<tr><td colspan="7"><div class="empty"><div class="empty-icon">💵</div><div class="empty-text">No jobs yet</div></div></td></tr>';
+  tb.innerHTML=jobs?.length?jobs.map(j=>`<tr onclick="openJobPanel('${j.id}')"><td class="td-id">#${j.id?.slice(0,8)}</td><td style="font-weight:600">${j.customers?.name||'—'}</td><td style="color:var(--muted);font-size:12px">${j.service_type||'—'}</td><td>${statusPill(j.status)}</td><td class="td-amount">${j.invoice_amount?'$'+j.invoice_amount.toLocaleString():'—'}</td><td>${j.invoice_paid?'<span class="pill pill-green">Paid</span>':'<span class="pill pill-gray">Unpaid</span>'}</td><td style="color:var(--muted);font-size:12px">${fmtDate(j.created_at)}</td></tr>`).join(''):'<tr><td colspan="7"><div class="empty"><div class="empty-icon">💵</div><div class="empty-text">No jobs</div></div></td></tr>';
 }
 
 async function loadCalls(){
   const{data:calls}=await db.from('call_logs').select('*,customers(name)').order('created_at',{ascending:false}).limit(30);
   const total=calls?.length||0,booked=(calls||[]).filter(c=>c.outcome==='booked').length,rate=total?Math.round(booked/total*100):0;
   document.getElementById('ai-total').textContent=total;document.getElementById('ai-booked').textContent=booked;document.getElementById('ai-rate').textContent=rate+'%';
-  const el=document.getElementById('calls-list');
-  el.innerHTML=calls?.length?calls.map(c=>`<div class="call-row"><div class="call-icon" style="background:${c.outcome==='booked'?'var(--green-light)':'var(--red-light)'}">${c.outcome==='booked'?'📞':'📵'}</div><div class="call-info"><div class="call-name">${c.customers?.name||c.caller_number||'Unknown'}</div><div class="call-detail">${c.summary||'AI call recorded'}</div></div><div class="call-meta"><div class="call-time">${fmt(c.created_at)}</div><div class="call-outcome" style="color:${c.outcome==='booked'?'var(--green)':'var(--muted)'}">${c.outcome==='booked'?'Booked':'No booking'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-icon">📞</div><div class="empty-text">No calls yet.</div></div>';
+  document.getElementById('calls-list').innerHTML=calls?.length?calls.map(c=>`<div class="call-row"><div class="call-icon" style="background:${c.outcome==='booked'?'var(--green-light)':'var(--red-light)'}">${c.outcome==='booked'?'📞':'📵'}</div><div class="call-info"><div class="call-name">${c.customers?.name||c.caller_number||'Unknown'}</div><div class="call-detail">${c.summary||'AI call'}</div></div><div class="call-meta"><div class="call-time">${fmt(c.created_at)}</div><div style="font-size:11px;font-weight:700;color:${c.outcome==='booked'?'var(--green)':'var(--muted)'}">${c.outcome==='booked'?'Booked':'No booking'}</div></div></div>`).join(''):'<div class="empty"><div class="empty-icon">📞</div><div class="empty-text">No calls yet.</div></div>';
 }
 
 async function loadReports(){
@@ -792,16 +943,15 @@ async function loadReports(){
   const[{count:tj},{count:tc},{count:ai},{count:cp}]=await Promise.all([db.from('jobs').select('*',{count:'exact',head:true}),db.from('customers').select('*',{count:'exact',head:true}),db.from('jobs').select('*',{count:'exact',head:true}).eq('source','ai_voice'),db.from('jobs').select('*',{count:'exact',head:true}).eq('status','complete')]);
   document.getElementById('rep-jobs').textContent=tj||0;document.getElementById('rep-customers').textContent=tc||0;document.getElementById('rep-ai').textContent=ai||0;document.getElementById('rep-complete').textContent=cp||0;
   const{data:sd}=await db.from('jobs').select('status');const sc={};(sd||[]).forEach(j=>{sc[j.status]=(sc[j.status]||0)+1;});const ms=Math.max(...Object.values(sc),1);
-  document.getElementById('reports-status').innerHTML=Object.entries(sc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s.replace('_',' ')}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/ms*100)}%;background:var(--blue)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data yet</div></div>';
+  document.getElementById('reports-status').innerHTML=Object.entries(sc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s.replace('_',' ')}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/ms*100)}%;background:var(--blue)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data</div></div>';
   const{data:src}=await db.from('jobs').select('source');const srcc={};(src||[]).forEach(j=>{srcc[j.source||'unknown']=(srcc[j.source||'unknown']||0)+1;});const msr=Math.max(...Object.values(srcc),1);
-  document.getElementById('reports-source').innerHTML=Object.entries(srcc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/msr*100)}%;background:var(--red)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data yet</div></div>';
+  document.getElementById('reports-source').innerHTML=Object.entries(srcc).map(([s,n])=>`<div class="bar-row"><div class="bar-label">${s}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/msr*100)}%;background:var(--red)">${n}</div></div><div class="bar-val">${n}</div></div>`).join('')||'<div class="empty"><div class="empty-text">No data</div></div>';
 }
 
-function showToast(msg){const t=document.getElementById('save-toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+function showToast(msg){const t=document.getElementById('save-toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 db.channel('jobs').on('postgres_changes',{event:'*',schema:'public',table:'jobs'},()=>{if(currentPage==='dashboard')loadDashboard();if(currentPage==='dispatch')loadDispatch();}).subscribe();
-db.channel('calls').on('postgres_changes',{event:'*',schema:'public',table:'call_logs'},()=>{if(currentPage==='calls')loadCalls();if(currentPage==='dashboard')loadDashboard();}).subscribe();
-db.channel('techs').on('postgres_changes',{event:'*',schema:'public',table:'technicians'},()=>{if(currentPage==='techs')loadTechs();if(currentPage==='dashboard')loadDashboard();}).subscribe();
+db.channel('estimates-ch').on('postgres_changes',{event:'*',schema:'public',table:'estimates'},()=>{if(currentPage==='estimates')loadEstimates();if(currentPage==='dashboard')loadDashboard();}).subscribe();
 
 (async()=>{const{data:t}=await db.from('technicians').select('*');allTechs=t||[];})();
 loadDashboard();
