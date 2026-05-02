@@ -227,7 +227,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   <div class="nav-section">Operations</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">◼</span> Dashboard</div>
   <div class="nav-item" onclick="nav('dispatch',this)"><span class="nav-icon">📋</span> Dispatch <span class="nav-badge" id="badge-dispatch">—</span></div>
-  <div class="nav-item" onclick="nav('schedule',this)"><span class="nav-icon">📅</span> Schedule</div>
+  <div class="nav-item" onclick="nav('schedule',this)"><span class="nav-icon">📅</span> Calendar</div>
   <div class="nav-item" onclick="nav('customers',this)"><span class="nav-icon">👥</span> Customers</div>
   <div class="nav-item" onclick="nav('techs',this)"><span class="nav-icon">👷</span> Technicians</div>
   <div class="nav-section">Finance</div>
@@ -276,12 +276,23 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       <div class="job-list" id="dispatch-jobs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
     </div>
   </div>
-  <!-- SCHEDULE -->
+  <!-- DISPATCH CALENDAR -->
   <div class="page" id="page-schedule">
-    <div class="page-header"><div><div class="page-title">Schedule</div><div class="page-sub">Upcoming availability</div></div></div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">This Week</span></div>
-      <div id="schedule-content"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    <div class="page-header">
+      <div><div class="page-title">Dispatch Calendar</div><div class="page-sub" id="cal-week-label">Loading...</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="calPrevWeek()">&#8592; Prev</button>
+        <button class="btn btn-outline btn-sm" onclick="calThisWeek()">Today</button>
+        <button class="btn btn-outline btn-sm" onclick="calNextWeek()">Next &#8594;</button>
+        <button class="btn btn-primary" onclick="openNewJobPanel()">+ New Job</button>
+      </div>
+    </div>
+    <div id="cal-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px"></div>
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div id="cal-header" style="display:grid;border-bottom:2px solid var(--border)"></div>
+      <div id="cal-body" style="overflow-y:auto;max-height:580px;position:relative">
+        <div class="loading"><div class="spinner"></div> Loading calendar...</div>
+      </div>
     </div>
   </div>
   <!-- CUSTOMERS -->
@@ -873,9 +884,131 @@ async function loadDispatch(){
   document.getElementById('dispatch-jobs').innerHTML=jobs?.length?jobs.map(jobRowHTML).join(''):'<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All clear!</div></div>';
 }
 
-async function loadSchedule(){
-  const{data:slots}=await db.from('availability_slots').select('*,technicians(name)').gte('starts_at',new Date().toISOString()).order('starts_at').limit(20);
-  document.getElementById('schedule-content').innerHTML=slots?.length?`<div class="job-list">${slots.map(s=>`<div class="job-row ${s.booked?'complete':'scheduled'}" onclick="openTechPanel('${s.technician_id}')"><div class="job-avatar" style="background:${colorFor(s.technicians?.name)}">${initials(s.technicians?.name)}</div><div><div class="job-name">${s.technicians?.name||'Unknown'}</div><div class="job-detail">${fmt(s.starts_at)} — ${fmt(s.ends_at)}</div></div><span class="pill ${s.booked?'pill-green':'pill-blue'}">${s.booked?'Booked':'Open'}</span></div>`).join('')}</div>`:'<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No upcoming slots.</div></div>';
+// ── DISPATCH CALENDAR ────────────────────────────────────────────────────────
+let calWeekStart = getWeekStart(new Date());
+
+function getWeekStart(d) {
+  const day = new Date(d);
+  const dow = day.getDay(); // 0=Sun
+  day.setDate(day.getDate() - dow);
+  day.setHours(0,0,0,0);
+  return day;
+}
+function calPrevWeek() { calWeekStart.setDate(calWeekStart.getDate()-7); loadSchedule(); }
+function calNextWeek() { calWeekStart.setDate(calWeekStart.getDate()+7); loadSchedule(); }
+function calThisWeek() { calWeekStart = getWeekStart(new Date()); loadSchedule(); }
+
+const HOURS = [7,8,9,10,11,12,13,14,15,16,17,18,19]; // 7am-7pm
+const HOUR_H = 56; // px per hour
+const CAL_COLORS = ['#C0392B','#2471A3','#27AE60','#8E44AD','#E67E22','#16A085','#F39C12'];
+
+async function loadSchedule() {
+  const weekEnd = new Date(calWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const [{ data: jobs }, { data: techs }] = await Promise.all([
+    db.from('jobs').select('*,customers(name)').not('status','in','("complete","cancelled")')
+      .gte('scheduled_at', calWeekStart.toISOString())
+      .lt('scheduled_at', weekEnd.toISOString())
+      .order('scheduled_at'),
+    db.from('technicians').select('*').order('name'),
+  ]);
+
+  allTechs = techs || [];
+  const days = Array.from({length:7}, (_,i) => {
+    const d = new Date(calWeekStart); d.setDate(d.getDate()+i); return d;
+  });
+
+  // Week label
+  const opts = {month:'short', day:'numeric'};
+  document.getElementById('cal-week-label').textContent =
+    days[0].toLocaleDateString('en-US',opts) + ' — ' + days[6].toLocaleDateString('en-US',opts);
+
+  // Tech legend
+  const legend = document.getElementById('cal-legend');
+  legend.innerHTML = (techs||[]).map((t,i) =>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text)">
+      <div style="width:12px;height:12px;border-radius:3px;background:${CAL_COLORS[i%CAL_COLORS.length]}"></div>${t.name}
+    </div>`
+  ).join('') + `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)">
+    <div style="width:12px;height:12px;border-radius:3px;background:var(--border)"></div>Unassigned
+  </div>`;
+
+  // Header row
+  const isToday = (d) => d.toDateString() === new Date().toDateString();
+  const header = document.getElementById('cal-header');
+  header.style.gridTemplateColumns = '52px repeat(7, 1fr)';
+  header.innerHTML = '<div style="background:var(--off);border-right:1px solid var(--border)"></div>'
+    + days.map(d => `<div style="padding:10px 8px;text-align:center;background:${isToday(d)?'var(--blue-light)':'var(--off)'};border-right:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">${d.toLocaleDateString('en-US',{weekday:'short'})}</div>
+      <div style="font-size:18px;font-weight:700;color:${isToday(d)?'var(--blue)':'var(--text)'};font-family:'Bebas Neue',sans-serif;letter-spacing:1px">${d.getDate()}</div>
+    </div>`).join('');
+
+  // Body
+  const body = document.getElementById('cal-body');
+  const totalH = HOURS.length * HOUR_H;
+
+  // Build job map: day -> list of jobs
+  const jobsByDay = {};
+  (jobs||[]).forEach(j => {
+    if (!j.scheduled_at) return;
+    const d = new Date(j.scheduled_at);
+    const key = d.toDateString();
+    if (!jobsByDay[key]) jobsByDay[key] = [];
+    jobsByDay[key].push(j);
+  });
+
+  // Time grid
+  let gridHTML = `<div style="display:grid;grid-template-columns:52px repeat(7,1fr);position:relative;min-height:${totalH}px">`;
+
+  // Hour labels + horizontal lines
+  HOURS.forEach((h,i) => {
+    const top = i * HOUR_H;
+    const label = h === 12 ? '12 PM' : h > 12 ? (h-12)+' PM' : h+' AM';
+    gridHTML += `<div style="position:absolute;top:${top}px;left:0;width:52px;font-size:10px;color:var(--muted);padding:2px 6px;text-align:right;line-height:1">${label}</div>`;
+    gridHTML += `<div style="position:absolute;top:${top}px;left:52px;right:0;height:1px;background:var(--border)"></div>`;
+  });
+
+  // Half-hour lines (lighter)
+  HOURS.forEach((_,i) => {
+    const top = i * HOUR_H + HOUR_H/2;
+    gridHTML += `<div style="position:absolute;top:${top}px;left:52px;right:0;height:1px;background:#f0f0f0"></div>`;
+  });
+
+  // Day columns
+  days.forEach((d,di) => {
+    const colLeft = 52 + di * ((100-52/800*100)/7); // approximate
+    const key = d.toDateString();
+    const dayJobs = jobsByDay[key] || [];
+    const colStyle = `position:absolute;top:0;bottom:0;left:calc(52px + ${di} * ((100% - 52px) / 7));width:calc((100% - 52px) / 7);border-right:1px solid var(--border);${isToday(d)?'background:rgba(36,113,163,0.03)':''}`;
+    gridHTML += `<div style="${colStyle}">`;
+
+    dayJobs.forEach(j => {
+      const jDate = new Date(j.scheduled_at);
+      const hFrac = jDate.getHours() + jDate.getMinutes()/60;
+      const startH = HOURS[0];
+      const endH = HOURS[HOURS.length-1] + 1;
+      if (hFrac < startH || hFrac >= endH) return;
+      const top = (hFrac - startH) * HOUR_H;
+      const techIdx = allTechs.findIndex(t => t.id === j.technician_id);
+      const color = techIdx >= 0 ? CAL_COLORS[techIdx % CAL_COLORS.length] : 'var(--muted)';
+      const custName = j.customers?.name || 'Unknown';
+      const svc = j.service_type || '—';
+      gridHTML += `<div onclick="openJobPanel('${j.id}')" style="position:absolute;top:${top}px;left:3px;right:3px;height:${HOUR_H-4}px;background:${color};border-radius:6px;padding:4px 6px;cursor:pointer;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.15);transition:transform 0.1s" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <div style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${custName}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${svc}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.6)">${jDate.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>
+      </div>`;
+    });
+
+    gridHTML += '</div>';
+  });
+
+  gridHTML += '</div>';
+  body.innerHTML = gridHTML;
+
+  // Scroll to 8am
+  body.scrollTop = HOUR_H;
 }
 
 let allCustomers=[];
