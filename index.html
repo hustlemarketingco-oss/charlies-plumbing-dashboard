@@ -454,96 +454,7 @@ function loadPage(p){
   if(p==='reports')loadReports();
 }
 
-async function openTranscript(callId) {
-  document.getElementById('transcript-overlay').classList.add('open');
-  document.getElementById('transcript-panel').classList.add('open');
-  document.getElementById('transcript-panel-title').textContent = 'Call Transcript';
-  document.getElementById('transcript-panel-body').innerHTML = '<div class="loading"><div class="spinner"></div> Loading transcript...</div>';
 
-  const { data: call } = await db.from('call_logs')
-    .select('*,customers(name,phone)')
-    .eq('id', callId).single();
-
-  if (!call) {
-    document.getElementById('transcript-panel-body').innerHTML = '<div class="empty"><div class="empty-text">Call not found.</div></div>';
-    return;
-  }
-
-  document.getElementById('transcript-panel-title').textContent =
-    call.customers?.name || call.caller_number || 'Unknown Caller';
-
-  // Parse transcript
-  let transcript = call.transcript;
-  if (typeof transcript === 'string') {
-    try { transcript = JSON.parse(transcript); } catch(e) { transcript = []; }
-  }
-  if (!Array.isArray(transcript)) transcript = [];
-
-  // Filter to just user/assistant turns
-  const turns = transcript.filter(t => t.role === 'user' || t.role === 'assistant');
-
-  const outcomeColor = call.outcome === 'booked' ? 'var(--green)' : 'var(--muted)';
-  const outcomeBg = call.outcome === 'booked' ? 'var(--green-light)' : 'var(--off)';
-  const outcomeLabel = call.outcome === 'booked' ? '✓ Job Booked' : 'No booking';
-
-  document.getElementById('transcript-panel-body').innerHTML = `
-    <!-- Call summary header -->
-    <div style="background:linear-gradient(135deg,var(--blue),#0d1f35);border-radius:12px;padding:16px;color:white;margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px">${call.customers?.name || 'Unknown Caller'}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">${call.caller_number || 'Unknown number'}</div>
-        </div>
-        <span style="background:${outcomeBg};color:${outcomeColor};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;display:flex;align-items:center;gap:4px">
-          <span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>
-          ${outcomeLabel}
-        </span>
-      </div>
-      <div style="display:flex;gap:20px;flex-wrap:wrap">
-        <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Date</div>
-          <div style="font-size:13px;color:white;margin-top:2px">${fmt(call.created_at)}</div></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Source</div>
-          <div style="font-size:13px;color:white;margin-top:2px">${call.source || 'AI Voice'}</div></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Turns</div>
-          <div style="font-size:13px;color:white;margin-top:2px">${turns.length}</div></div>
-      </div>
-    </div>
-
-    ${call.summary ? `
-    <div style="background:var(--blue-light);border-radius:8px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--blue-mid)">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue-mid);font-weight:700;margin-bottom:4px">AI Summary</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.6">${call.summary}</div>
-    </div>` : ''}
-
-    ${call.job_id ? `
-    <div style="background:var(--green-light);border-radius:8px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--green);cursor:pointer" onclick="closePanel('transcript');openJobPanel('${call.job_id}')">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);font-weight:700;margin-bottom:4px">Booked Job</div>
-      <div style="font-size:13px;color:var(--text);font-weight:600">View booked job <span style="font-size:11px;color:var(--muted);font-weight:400">· Click to manage →</span></div>
-      <div style="font-size:13px;color:var(--text);font-weight:600">View booked job <span style="font-size:11px;color:var(--muted);font-weight:400">&middot; Click to manage &rarr;</span></div>
-
-    <!-- Transcript -->
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:12px">
-      ${turns.length ? `Full Transcript (${turns.length} turns)` : 'No transcript recorded'}
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${turns.length ? turns.map(t => {
-        const isAria = t.role === 'assistant';
-        const msgContent = typeof t.content === 'string' ? t.content :
-          (Array.isArray(t.content) ? t.content.filter(b => b.type === 'text').map(b => b.text).join(' ') : '');
-        if (!msgContent) return '';
-        const time = t.time ? new Date(t.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
-        return `<div style="display:flex;gap:10px;${isAria ? '' : 'flex-direction:row-reverse'}">
-          <div style="width:28px;height:28px;border-radius:50%;background:${isAria ? 'var(--blue)' : 'var(--off)'};border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px">${isAria ? '🔧' : '👤'}</div>
-          <div style="max-width:85%">
-            <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;${isAria ? '' : 'text-align:right'}">${isAria ? 'Aria' : 'Customer'}${time ? ' · ' + time : ''}</div>
-            <div style="background:${isAria ? 'white' : 'var(--blue)'};color:${isAria ? 'var(--text)' : 'white'};border-radius:${isAria ? '14px 14px 14px 4px' : '14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:${isAria ? '1px solid var(--border)' : 'none'}">${msgContent.split('\n').join('<br>')}</div>
-          </div>
-        </div>`;
-      }).join('') : '<div class="empty"><div class="empty-text">No transcript available for this call.</div></div>'}
-    </div>
-  `;
-}
 
 function closePanel(type) {
   const map={job:['overlay','job-panel'],customer:['customer-overlay','customer-panel'],tech:['tech-overlay','tech-panel'],estimate:['estimate-overlay','estimate-panel'],transcript:['transcript-overlay','transcript-panel']};
@@ -1204,5 +1115,110 @@ db.channel('estimates-ch').on('postgres_changes',{event:'*',schema:'public',tabl
 (async()=>{const{data:t}=await db.from('technicians').select('*');allTechs=t||[];})();
 loadDashboard();
 </script>
+
+<script>
+async function openTranscript(callId) {
+  document.getElementById('transcript-overlay').classList.add('open');
+  document.getElementById('transcript-panel').classList.add('open');
+  document.getElementById('transcript-panel-title').textContent = 'Call Transcript';
+  document.getElementById('transcript-panel-body').innerHTML = '<div class="loading"><div class="spinner"></div> Loading transcript...</div>';
+
+  const { data: call } = await db.from('call_logs').select('*,customers(name,phone)').eq('id', callId).single();
+  if (!call) { document.getElementById('transcript-panel-body').innerHTML = '<div class="empty"><div class="empty-text">Call not found.</div></div>'; return; }
+
+  document.getElementById('transcript-panel-title').textContent = call.customers?.name || call.caller_number || 'Unknown Caller';
+
+  let transcript = call.transcript;
+  if (typeof transcript === 'string') { try { transcript = JSON.parse(transcript); } catch(e) { transcript = []; } }
+  if (!Array.isArray(transcript)) transcript = [];
+  const turns = transcript.filter(t => t.role === 'user' || t.role === 'assistant');
+  const isBooked = call.outcome === 'booked';
+
+  const el = document.getElementById('transcript-panel-body');
+  el.innerHTML = '';
+
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = 'background:linear-gradient(135deg,var(--blue),#0d1f35);border-radius:12px;padding:16px;color:white;margin-bottom:16px';
+  header.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px">${call.customers?.name || 'Unknown'}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">${call.caller_number || ''}</div>
+      </div>
+      <span style="background:${isBooked ? 'var(--green-light)' : 'var(--off)'};color:${isBooked ? 'var(--green)' : 'var(--muted)'};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px">${isBooked ? '✓ Job Booked' : 'No booking'}</span>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Date</div><div style="font-size:13px;color:white;margin-top:2px">${fmt(call.created_at)}</div></div>
+      <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Turns</div><div style="font-size:13px;color:white;margin-top:2px">${turns.length}</div></div>
+      <div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">Source</div><div style="font-size:13px;color:white;margin-top:2px">${call.source || 'AI Voice'}</div></div>
+    </div>`;
+  el.appendChild(header);
+
+  // Summary
+  if (call.summary) {
+    const sumEl = document.createElement('div');
+    sumEl.style.cssText = 'background:var(--blue-light);border-radius:8px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--blue-mid)';
+    sumEl.innerHTML = '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue-mid);font-weight:700;margin-bottom:4px">AI Summary</div><div style="font-size:13px;color:var(--text);line-height:1.6">' + call.summary + '</div>';
+    el.appendChild(sumEl);
+  }
+
+  // Job link
+  if (call.job_id) {
+    const jobEl = document.createElement('div');
+    jobEl.style.cssText = 'background:var(--green-light);border-radius:8px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--green);cursor:pointer';
+    jobEl.innerHTML = '<div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);font-weight:700;margin-bottom:4px">Booked Job</div><div style="font-size:13px;color:var(--text);font-weight:600">View booked job <span style="font-size:11px;color:var(--muted);font-weight:400">· Click to manage →</span></div>';
+    jobEl.onclick = () => { closePanel('transcript'); openJobPanel(call.job_id); };
+    el.appendChild(jobEl);
+  }
+
+  // Transcript label
+  const labelEl = document.createElement('div');
+  labelEl.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:12px';
+  labelEl.textContent = turns.length ? `Full Transcript (${turns.length} turns)` : 'No transcript recorded';
+  el.appendChild(labelEl);
+
+  // Turns
+  const turnsEl = document.createElement('div');
+  turnsEl.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+  if (turns.length) {
+    turns.forEach(t => {
+      const isAria = t.role === 'assistant';
+      let msgContent = typeof t.content === 'string' ? t.content :
+        (Array.isArray(t.content) ? t.content.filter(b => b.type === 'text').map(b => b.text).join(' ') : '');
+      if (!msgContent) return;
+      const timeStr = t.time ? new Date(t.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;' + (isAria ? '' : 'flex-direction:row-reverse');
+
+      const avatar = document.createElement('div');
+      avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:' + (isAria ? 'var(--blue)' : 'var(--off)') + ';border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px';
+      avatar.textContent = isAria ? '🔧' : '👤';
+
+      const wrap = document.createElement('div');
+      wrap.style.maxWidth = '85%';
+
+      const meta = document.createElement('div');
+      meta.style.cssText = 'font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;' + (isAria ? '' : 'text-align:right');
+      meta.textContent = (isAria ? 'Aria' : 'Customer') + (timeStr ? ' · ' + timeStr : '');
+
+      const bubble = document.createElement('div');
+      bubble.style.cssText = 'background:' + (isAria ? 'white' : 'var(--blue)') + ';color:' + (isAria ? 'var(--text)' : 'white') + ';border-radius:' + (isAria ? '14px 14px 14px 4px' : '14px 14px 4px 14px') + ';padding:10px 14px;font-size:13px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.08);' + (isAria ? 'border:1px solid var(--border)' : '');
+      bubble.innerHTML = msgContent.split('\n').join('<br>');
+
+      wrap.appendChild(meta);
+      wrap.appendChild(bubble);
+      row.appendChild(avatar);
+      row.appendChild(wrap);
+      turnsEl.appendChild(row);
+    });
+  } else {
+    turnsEl.innerHTML = '<div class="empty"><div class="empty-text">No transcript available for this call.</div></div>';
+  }
+  el.appendChild(turnsEl);
+}
+</script>
+
 </body>
 </html>
