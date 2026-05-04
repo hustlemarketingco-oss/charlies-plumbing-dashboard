@@ -461,7 +461,7 @@ async function openTranscript(callId) {
   document.getElementById('transcript-panel-body').innerHTML = '<div class="loading"><div class="spinner"></div> Loading transcript...</div>';
 
   const { data: call } = await db.from('call_logs')
-    .select('*,customers(name,phone),jobs(service_type,status)')
+    .select('*,customers(name,phone)')
     .eq('id', callId).single();
 
   if (!call) {
@@ -515,11 +515,11 @@ async function openTranscript(callId) {
       <div style="font-size:13px;color:var(--text);line-height:1.6">${call.summary}</div>
     </div>` : ''}
 
-    ${call.jobs ? `
+    ${call.job_id ? `
     <div style="background:var(--green-light);border-radius:8px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--green);cursor:pointer" onclick="closePanel('transcript');openJobPanel('${call.job_id}')">
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);font-weight:700;margin-bottom:4px">Booked Job</div>
-      <div style="font-size:13px;color:var(--text);font-weight:600">${call.jobs.service_type || 'Service'} <span style="font-size:11px;color:var(--muted);font-weight:400">· Click to manage →</span></div>
-    </div>` : ''}
+      <div style="font-size:13px;color:var(--text);font-weight:600">View booked job <span style="font-size:11px;color:var(--muted);font-weight:400">· Click to manage →</span></div>
+      <div style="font-size:13px;color:var(--text);font-weight:600">View booked job <span style="font-size:11px;color:var(--muted);font-weight:400">&middot; Click to manage &rarr;</span></div>
 
     <!-- Transcript -->
     <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:12px">
@@ -537,8 +537,7 @@ async function openTranscript(callId) {
           <div style="width:28px;height:28px;border-radius:50%;background:${isAria ? 'var(--blue)' : 'var(--off)'};border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px">${isAria ? '🔧' : '👤'}</div>
           <div style="max-width:85%">
             <div style="font-size:10px;color:var(--muted);font-weight:600;margin-bottom:3px;${isAria ? '' : 'text-align:right'}">${isAria ? 'Aria' : 'Customer'}${time ? ' · ' + time : ''}</div>
-            <div style="background:${isAria ? 'white' : 'var(--blue)'};color:${isAria ? 'var(--text)' : 'white'};border-radius:${isAria ? '14px 14px 14px 4px' : '14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:${isAria ? '1px solid var(--border)' : 'none'}">${msgContent.replace(/
-/g,'<br>')}</div>
+            <div style="background:${isAria ? 'white' : 'var(--blue)'};color:${isAria ? 'var(--text)' : 'white'};border-radius:${isAria ? '14px 14px 14px 4px' : '14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:${isAria ? '1px solid var(--border)' : 'none'}">${msgContent.split('\n').join('<br>')}</div>
           </div>
         </div>`;
       }).join('') : '<div class="empty"><div class="empty-text">No transcript available for this call.</div></div>'}
