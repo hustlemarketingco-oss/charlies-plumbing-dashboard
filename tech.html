@@ -94,6 +94,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
 .toast.success{background:var(--green);}
 .btn-estimate{width:100%;padding:12px;background:white;color:var(--blue);border:1.5px solid var(--blue);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-estimate:active{background:#e8f4fc;}
+.pay-method-btn{padding:14px 8px;border:1.5px solid #E2E6EA;border-radius:10px;background:white;cursor:pointer;font-size:13px;font-weight:700;color:#1C2833;font-family:'Barlow',sans-serif;transition:all 0.15s;width:100%;}
+.pay-method-btn:active{border-color:#1A3A5C;}
+.pay-method-btn.selected{border-color:#27AE60;background:#EAFAF1;color:#1E8449;}
+#payment-sheet{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;display:none;align-items:flex-end;justify-content:center;}
+#payment-sheet.open{display:flex;}
+.payment-inner{background:white;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px;max-height:90vh;overflow-y:auto;}
 .est-sheet{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
 .est-sheet.open{display:flex;}
 .est-inner{background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;}
@@ -353,25 +359,145 @@ async function sendSMS(phone, customerName, status, jobId) {
   }
 }
 
-// ── COMPLETE CONFIRM ──────────────────────────────────────────────────────────
+// ── COMPLETE CONFIRM → PAYMENT SHEET ─────────────────────────────────────────
 let pendingComplete = null;
 
-function confirmComplete(jobId, customerName, customerPhone) {
+async function confirmComplete(jobId, customerName, customerPhone) {
   pendingComplete = { jobId, customerName, customerPhone };
-  document.getElementById('modal-title').textContent = 'Mark Job Complete?';
-  document.getElementById('modal-text').textContent = `This will mark the job for ${customerName} as complete and send them a thank you text with a Google review link.`;
-  document.getElementById('modal-confirm').textContent = '✓ Complete Job';
-  document.getElementById('modal-confirm').className = 'modal-confirm';
-  document.getElementById('modal-overlay').classList.add('open');
+  // Load job to get estimate total
+  const { data: job } = await db.from('jobs')
+    .select('*,estimates(total,line_items,title)')
+    .eq('id', jobId).single();
+  const total = job?.estimates?.total || job?.invoice_amount || null;
+  openPaymentSheet(jobId, customerName, customerPhone, total, job?.estimates);
 }
 
-async function confirmAction() {
-  closeModal();
+function openPaymentSheet(jobId, customerName, customerPhone, total, estimate) {
+  const sheet = document.getElementById('payment-sheet');
+  const body = document.getElementById('payment-body');
+  const totalStr = total ? '$' + parseFloat(total).toFixed(2) : null;
+
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:36px;margin-bottom:8px">💰</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#1A3A5C;letter-spacing:1.5px">Collect Payment</div>
+      <div style="font-size:14px;color:#7F8C8D;margin-top:4px">${customerName}</div>
+    </div>
+
+    ${totalStr ? `
+    <div style="background:#F0F7FF;border-radius:12px;padding:16px;text-align:center;margin-bottom:20px;border:1px solid #C8E0F4">
+      <div style="font-size:11px;color:#2471A3;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${estimate?.title || 'Invoice Total'}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#1A3A5C;letter-spacing:2px">${totalStr}</div>
+    </div>` : `
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;color:#7F8C8D;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Invoice Amount</label>
+      <input id="pay-amount" type="number" placeholder="0.00" style="width:100%;padding:14px;border:1.5px solid #E2E6EA;border-radius:10px;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;letter-spacing:1px">
+    </div>`}
+
+    <div style="font-size:12px;font-weight:700;color:#7F8C8D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Payment Method</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+      <button onclick="selectPayMethod('cash',this)" class="pay-method-btn" data-method="cash">
+        <div style="font-size:24px;margin-bottom:4px">💵</div>
+        <div>Cash</div>
+      </button>
+      <button onclick="selectPayMethod('check',this)" class="pay-method-btn" data-method="check">
+        <div style="font-size:24px;margin-bottom:4px">📝</div>
+        <div>Check</div>
+      </button>
+      <button onclick="selectPayMethod('card',this)" class="pay-method-btn" data-method="card">
+        <div style="font-size:24px;margin-bottom:4px">💳</div>
+        <div>Card Link</div>
+      </button>
+    </div>
+
+    <div id="check-field" style="display:none;margin-bottom:16px">
+      <label style="font-size:12px;font-weight:700;color:#7F8C8D;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Check Number</label>
+      <input id="check-num" type="text" placeholder="e.g. 1042" style="width:100%;padding:12px 14px;border:1.5px solid #E2E6EA;border-radius:10px;font-size:16px;font-family:'Barlow',sans-serif;outline:none;box-sizing:border-box">
+    </div>
+
+    <div id="card-info" style="display:none;background:#FEF9E7;border-radius:10px;padding:14px;margin-bottom:16px;border:1px solid #F0E0A0">
+      <div style="font-size:13px;color:#B7770D;line-height:1.6"><strong>Card payment link</strong> will be texted to ${customerPhone || 'the customer'} after you complete the job. The job will stay open until payment is received.</div>
+    </div>`;
+
+  sheet.classList.add('open');
+}
+
+let selectedPayMethod = null;
+
+function selectPayMethod(method, btn) {
+  selectedPayMethod = method;
+  document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('check-field').style.display = method === 'check' ? 'block' : 'none';
+  document.getElementById('card-info').style.display = method === 'card' ? 'block' : 'none';
+  document.getElementById('pay-confirm-btn').disabled = false;
+}
+
+async function confirmPayment() {
+  if (!selectedPayMethod) { showToast('Select a payment method'); return; }
   if (!pendingComplete) return;
   const { jobId, customerName, customerPhone } = pendingComplete;
+
+  const btn = document.getElementById('pay-confirm-btn');
+  btn.textContent = 'Processing...'; btn.disabled = true;
+
+  // Get amount
+  const amountEl = document.getElementById('pay-amount');
+  const amount = amountEl ? parseFloat(amountEl.value) || null : null;
+  const checkNum = document.getElementById('check-num')?.value || '';
+
+  const payNote = selectedPayMethod === 'cash' ? 'Payment: Cash' :
+                  selectedPayMethod === 'check' ? 'Payment: Check' + (checkNum ? ' #' + checkNum : '') :
+                  'Payment: Card link sent';
+
+  const isPaid = selectedPayMethod !== 'card';
+
+  // Update job
+  const updateData = {
+    status: 'complete',
+    invoice_paid: isPaid,
+    notes: payNote
+  };
+  if (amount) updateData.invoice_amount = amount;
+
+  await db.from('jobs').update(updateData).eq('id', jobId);
+
+  // Send SMS
+  if (customerPhone) {
+    if (isPaid) {
+      // Review request
+      await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          to: customerPhone,
+          body: `Hi ${customerName.split(' ')[0]}! Thanks for choosing Charlie's Plumbing. We hope everything is working perfectly. If you have a moment, we'd love a Google review: https://g.page/r/charlies-plumbing/review — Thank you! 🔧`
+        })
+      }).catch(() => {});
+    } else {
+      // Card payment link — send invoice link (placeholder until Stripe is set up)
+      await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          to: customerPhone,
+          body: `Hi ${customerName.split(' ')[0]}! Thank you for choosing Charlie's Plumbing. Your technician has completed the job. Please call (801) 406-8585 to complete your card payment. Thank you!`
+        })
+      }).catch(() => {});
+    }
+  }
+
+  closePaymentSheet();
   pendingComplete = null;
-  await updateStatus(jobId, 'complete', customerName, customerPhone);
-  if (customerPhone) await sendSMS(customerPhone, customerName, 'complete', jobId);
+  selectedPayMethod = null;
+  showToast(isPaid ? '✓ Payment collected — job complete!' : '✓ Job complete — card link sent', 'success');
+  setTimeout(loadJobs, 1000);
+}
+
+function closePaymentSheet() {
+  document.getElementById('payment-sheet').classList.remove('open');
+  document.getElementById('pay-confirm-btn').disabled = true;
+  selectedPayMethod = null;
 }
 
 function closeModal() {
@@ -395,6 +521,15 @@ db.channel('tech-jobs')
 // ── START ────────────────────────────────────────────────────────────────────
 init();
 </script>
+
+<!-- PAYMENT SHEET -->
+<div id="payment-sheet">
+  <div class="payment-inner">
+    <div id="payment-body"></div>
+    <button id="pay-confirm-btn" disabled onclick="confirmPayment()" style="width:100%;padding:16px;background:#27AE60;color:white;border:none;border-radius:12px;font-size:17px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;cursor:pointer;margin-top:4px;opacity:1;transition:opacity 0.2s">✓ Confirm Payment &amp; Complete Job</button>
+    <button onclick="closePaymentSheet()" style="width:100%;padding:14px;background:white;color:#7F8C8D;border:1.5px solid #E2E6EA;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;font-family:'Barlow',sans-serif">Cancel</button>
+  </div>
+</div>
 
 <!-- ESTIMATE BUILDER SHEET -->
 <div class="est-sheet" id="est-sheet" onclick="if(event.target===this)closeEstSheet()">
