@@ -725,10 +725,31 @@ function renderEstimatePanel(prefillCustomer=null){
   document.getElementById('estimate-panel-body').innerHTML=`
     <div class="panel-section">
       <div class="panel-section-title">Customer</div>
-      ${prefillCustomer?.id||est.customer_id?`<div class="panel-field"><div class="panel-label">Customer</div><div class="panel-value">${prefillCustomer?.name||est.customers?.name||'—'}</div></div><input type="hidden" id="est-customer-id" value="${prefillCustomer?.id||est.customer_id||''}">`:
-      `<div class="panel-field"><div class="panel-label">Customer Name *</div><input class="panel-input" id="est-cust-name" value="${est.customers?.name||''}" placeholder="Full name"></div>
-       <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="est-cust-phone" value="${prefillCustomer?.phone||est.customers?.phone||''}" placeholder="(801) 555-0100"></div>
-       <div class="panel-field"><div class="panel-label">Email (for sending)</div><input class="panel-input" id="est-cust-email" value="${prefillCustomer?.email||est.customers?.email||''}" placeholder="customer@email.com"></div>`}
+      ${prefillCustomer?.id||est.customer_id?
+        `<div class="panel-field"><div class="panel-label">Customer</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--blue-light);border-radius:8px;padding:10px 14px">
+            <div>
+              <div style="font-weight:600;font-size:14px">${prefillCustomer?.name||est.customers?.name||'—'}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">${prefillCustomer?.phone||est.customers?.phone||''}</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="estClearCustomer()">Change</button>
+          </div>
+          <input type="hidden" id="est-customer-id" value="${prefillCustomer?.id||est.customer_id||''}">
+        </div>`:
+        `<div class="panel-field">
+          <div class="panel-label">Search Customer *</div>
+          <input class="panel-input" id="est-cust-search" placeholder="Type name or phone to search..." oninput="estSearchCustomers(this.value)" autocomplete="off">
+          <div id="est-cust-results" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;display:none;background:white;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:10;position:relative"></div>
+          <input type="hidden" id="est-customer-id" value="">
+        </div>
+        <div id="est-new-cust-fields" style="display:none">
+          <div style="background:var(--off);border-radius:8px;padding:12px;margin-bottom:4px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">New Customer</div>
+            <div class="panel-field"><div class="panel-label">Name *</div><input class="panel-input" id="est-cust-name" placeholder="Full name"></div>
+            <div class="panel-field"><div class="panel-label">Phone</div><input class="panel-input" id="est-cust-phone" placeholder="(801) 555-0100"></div>
+            <div class="panel-field" style="margin-bottom:0"><div class="panel-label">Email</div><input class="panel-input" id="est-cust-email" placeholder="customer@email.com"></div>
+          </div>
+        </div>`}
     </div>
     <div class="panel-section">
       <div class="panel-section-title">Estimate Info</div>
@@ -1218,6 +1239,118 @@ async function openTranscript(callId) {
   }
   el.appendChild(turnsEl);
 }
+</script>
+
+
+<script>
+// ── ESTIMATE CUSTOMER SEARCH ──────────────────────────────────────────────────
+let estSearchTimeout = null;
+
+function estSearchCustomers(query) {
+  clearTimeout(estSearchTimeout);
+  const results = document.getElementById('est-cust-results');
+  const newFields = document.getElementById('est-new-cust-fields');
+  const hiddenId = document.getElementById('est-customer-id');
+
+  // Clear selection if they type again
+  if (hiddenId) hiddenId.value = '';
+
+  if (!query || query.length < 2) {
+    if (results) results.style.display = 'none';
+    if (newFields) newFields.style.display = 'none';
+    return;
+  }
+
+  estSearchTimeout = setTimeout(async () => {
+    const q = query.toLowerCase();
+    const { data: customers } = await db.from('customers')
+      .select('id,name,phone,email,address')
+      .or(`name.ilike.%${query}%,phone.ilike.%${query}%`)
+      .limit(8);
+
+    if (!results) return;
+
+    if (!customers || customers.length === 0) {
+      results.style.display = 'block';
+      results.innerHTML = `
+        <div style="padding:10px 14px;font-size:13px;color:var(--muted)">No existing customers found.</div>
+        <div onclick="estShowNewCustomer()" style="padding:10px 14px;font-size:13px;font-weight:600;color:var(--blue);cursor:pointer;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;transition:background 0.15s" onmouseover="this.style.background='var(--off)'" onmouseout="this.style.background=''">
+          <span style="font-size:16px">+</span> Create new customer
+        </div>`;
+      return;
+    }
+
+    results.style.display = 'block';
+    results.innerHTML = customers.map(c => `
+      <div onclick="estSelectCustomer('${c.id}','${(c.name||'').replace(/'/g,"\'")}','${c.phone||''}','${c.email||''}')"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+        onmouseover="this.style.background='var(--off)'" onmouseout="this.style.background=''">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${c.name || '—'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${c.phone || 'No phone'}${c.address ? ' · ' + c.address : ''}</div>
+      </div>`).join('') +
+      `<div onclick="estShowNewCustomer()" style="padding:10px 14px;font-size:13px;font-weight:600;color:var(--blue);cursor:pointer;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;transition:background 0.15s" onmouseover="this.style.background='var(--off)'" onmouseout="this.style.background=''">
+        <span style="font-size:16px">+</span> Create new customer
+      </div>`;
+  }, 250);
+}
+
+function estSelectCustomer(id, name, phone, email) {
+  // Hide results
+  const results = document.getElementById('est-cust-results');
+  const newFields = document.getElementById('est-new-cust-fields');
+  const searchInput = document.getElementById('est-cust-search');
+  const hiddenId = document.getElementById('est-customer-id');
+
+  if (results) results.style.display = 'none';
+  if (newFields) newFields.style.display = 'none';
+  if (searchInput) searchInput.value = name;
+  if (hiddenId) hiddenId.value = id;
+
+  // Show selected customer chip
+  const searchField = searchInput?.parentElement;
+  if (searchField) {
+    // Replace search input with a selected chip + change button
+    const chip = document.createElement('div');
+    chip.id = 'est-selected-chip';
+    chip.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:var(--blue-light);border-radius:8px;padding:10px 14px;margin-top:6px';
+    chip.innerHTML = `
+      <div>
+        <div style="font-weight:600;font-size:14px">${name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${phone || 'No phone'}</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="estClearCustomer()">Change</button>`;
+    searchInput.style.display = 'none';
+    searchField.appendChild(chip);
+  }
+}
+
+function estShowNewCustomer() {
+  const results = document.getElementById('est-cust-results');
+  const newFields = document.getElementById('est-new-cust-fields');
+  if (results) results.style.display = 'none';
+  if (newFields) newFields.style.display = 'block';
+  // Clear hidden customer id
+  const hiddenId = document.getElementById('est-customer-id');
+  if (hiddenId) hiddenId.value = '';
+}
+
+function estClearCustomer() {
+  // Re-render the estimate panel customer section without a prefill
+  const savedEstimate = currentEstimate;
+  currentEstimate = { ...savedEstimate, customer_id: null };
+  renderEstimatePanel(null);
+  // Restore estimate data
+  currentEstimate = savedEstimate;
+}
+
+// Close search results when clicking outside
+document.addEventListener('click', function(e) {
+  const results = document.getElementById('est-cust-results');
+  const searchInput = document.getElementById('est-cust-search');
+  if (results && !results.contains(e.target) && e.target !== searchInput) {
+    results.style.display = 'none';
+  }
+});
 </script>
 
 </body>
