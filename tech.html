@@ -92,6 +92,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);mi
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blue);color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:100;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.success{background:var(--green);}
+.btn-estimate{width:100%;padding:12px;background:white;color:var(--blue);border:1.5px solid var(--blue);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-estimate:active{background:#e8f4fc;}
+.est-sheet{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.est-sheet.open{display:flex;}
+.est-inner{background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;}
+.est-sheet-header{padding:16px 20px;border-bottom:1px solid #E2E6EA;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.est-sheet-title{font-size:18px;font-weight:700;color:#1A3A5C;}
+.est-sheet-body{flex:1;overflow-y:auto;padding:16px 20px;}
+.est-sheet-footer{padding:14px 20px;border-top:1px solid #E2E6EA;display:flex;gap:8px;flex-shrink:0;}
+.est-input{width:100%;padding:10px 14px;border:1.5px solid #E2E6EA;border-radius:8px;font-size:14px;font-family:'Barlow',sans-serif;color:#1C2833;outline:none;box-sizing:border-box;background:white;}
+.est-input:focus{border-color:#1A3A5C;}
+.est-label{font-size:11px;font-weight:700;color:#7F8C8D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;}
+.est-field{margin-bottom:14px;}
+.li-row{display:grid;grid-template-columns:1fr 50px 80px 30px;gap:6px;align-items:center;margin-bottom:8px;}
+.li-row input{padding:8px 10px;border:1.5px solid #E2E6EA;border-radius:6px;font-size:13px;font-family:'Barlow',sans-serif;outline:none;width:100%;box-sizing:border-box;}
+.li-row input:focus{border-color:#1A3A5C;}
+.li-del{width:28px;height:28px;background:#fdf0ee;border:none;border-radius:6px;cursor:pointer;font-size:14px;color:#C0392B;flex-shrink:0;}
+.est-totals{background:#F8F9FA;border-radius:8px;padding:12px 14px;margin-top:8px;}
+.est-total-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#555;}
+.est-total-row.grand{font-size:17px;font-weight:700;color:#1A3A5C;border-top:1px solid #E2E6EA;margin-top:6px;padding-top:8px;}
 .toast.error{background:var(--red);}
 
 /* ── CONFIRM MODAL ── */
@@ -292,6 +312,7 @@ function jobCardHTML(job, isDone = false) {
         <button class="action-btn btn-complete ${completeActive}" onclick="confirmComplete('${job.id}', '${customer?.name}', '${customer?.phone||''}')">✓ Job Done</button>
       </div>
       ${address ? `<button class="btn-map" onclick="window.open('${mapsUrl}','_blank')">🗺 Open in Maps</button>` : ''}
+      <button class="btn-estimate" onclick="openEstimateBuilder('${job.id}', '${(customer?.name||'').replace(/'/g,'')}', '${customer?.id||''}', '${customer?.phone||''}')">📄 Create / View Estimate</button>
     </div>` : ''}
   </div>`;
 }
@@ -374,5 +395,215 @@ db.channel('tech-jobs')
 // ── START ────────────────────────────────────────────────────────────────────
 init();
 </script>
+
+<!-- ESTIMATE BUILDER SHEET -->
+<div class="est-sheet" id="est-sheet" onclick="if(event.target===this)closeEstSheet()">
+  <div class="est-inner">
+    <div class="est-sheet-header">
+      <div class="est-sheet-title" id="est-sheet-title">Create Estimate</div>
+      <button onclick="closeEstSheet()" style="background:none;border:none;font-size:22px;color:#7F8C8D;cursor:pointer;padding:4px">×</button>
+    </div>
+    <div class="est-sheet-body" id="est-sheet-body"></div>
+    <div class="est-sheet-footer">
+      <button id="est-save-btn" onclick="saveEstimate()" style="flex:1;padding:12px;background:#1A3A5C;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">Save Estimate</button>
+      <button id="est-send-btn" onclick="sendEstimateToCustomer()" style="display:none;flex:1;padding:12px;background:#C0392B;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">📤 Send to Customer</button>
+      <button id="est-show-btn" onclick="showEstimateToCustomer()" style="display:none;flex:1;padding:12px;background:#27AE60;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">📱 Show Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER APPROVAL VIEW (full screen, hand phone to customer) -->
+<div id="approval-view" style="display:none;position:fixed;inset:0;background:white;z-index:300;overflow-y:auto;"></div>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  ESTIMATE BUILDER — TECH VIEW
+// ═══════════════════════════════════════════════════════
+const SB_URL = 'https://bfnwuurnzvncfumsnnds.supabase.co';
+const SB_KEY = 'sb_publishable_8aFV9Gj8xlDChJuXuENLHA_stiqieCr';
+const SITE_URL = 'https://hustlemarketingco-oss.github.io/charlies-plumbing-dashboard';
+
+let estJobId = null, estCustomerId = null, estCustomerName = '', estCustomerPhone = '';
+let estLineItems = [{desc:'', qty:1, price:0}];
+let currentEstId = null;
+let taxRate = 0;
+
+async function openEstimateBuilder(jobId, customerName, customerId, customerPhone) {
+  estCustomerPhone = customerPhone || '';
+  estJobId = jobId;
+  estCustomerName = customerName;
+  estCustomerId = customerId;
+  currentEstId = null;
+  estLineItems = [{desc:'', qty:1, price:0}];
+
+  // Check if estimate already exists for this job
+  const { data: existing } = await db.from('estimates')
+    .select('*')
+    .eq('customer_id', customerId)
+    .order('created_at', {ascending: false})
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    const est = existing[0];
+    currentEstId = est.id;
+    estLineItems = est.line_items || [{desc:'', qty:1, price:0}];
+    taxRate = est.tax_rate || 0;
+    document.getElementById('est-sheet-title').textContent = 'Edit Estimate';
+    document.getElementById('est-save-btn').textContent = 'Update Estimate';
+    document.getElementById('est-send-btn').style.display = 'flex';
+    document.getElementById('est-show-btn').style.display = 'flex';
+    renderEstSheet(est.title || '', est.notes || '', est.valid_until || '');
+  } else {
+    taxRate = 0;
+    document.getElementById('est-sheet-title').textContent = 'Create Estimate';
+    document.getElementById('est-save-btn').textContent = 'Save Estimate';
+    document.getElementById('est-send-btn').style.display = 'none';
+    document.getElementById('est-show-btn').style.display = 'none';
+    renderEstSheet('', '', '');
+  }
+
+  document.getElementById('est-sheet').classList.add('open');
+}
+
+function renderEstSheet(title, notes, validUntil) {
+  const body = document.getElementById('est-sheet-body');
+  body.innerHTML = `
+    <div class="est-field"><label class="est-label">Job / Service Title *</label><input class="est-input" id="est-title" value="${title}" placeholder="e.g. Water heater replacement"></div>
+    <div class="est-field"><label class="est-label">Notes (optional)</label><textarea class="est-input" id="est-notes" rows="2" placeholder="Scope of work, parts, warranty info...">${notes}</textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="est-field" style="margin:0"><label class="est-label">Tax Rate (%)</label><input class="est-input" id="est-tax" type="number" value="${taxRate}" min="0" max="30" step="0.1" oninput="taxRate=parseFloat(this.value)||0;estRecalc()"></div>
+      <div class="est-field" style="margin:0"><label class="est-label">Valid Until</label><input class="est-input" id="est-valid" type="date" value="${validUntil}"></div>
+    </div>
+    <div class="est-field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <label class="est-label" style="margin:0">Line Items</label>
+        <button onclick="estAddItem()" style="background:none;border:1.5px solid #1A3A5C;color:#1A3A5C;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ Add</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 50px 80px 30px;gap:6px;margin-bottom:6px">
+        <span style="font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Description</span>
+        <span style="font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Qty</span>
+        <span style="font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Price</span>
+        <span></span>
+      </div>
+      <div id="est-line-items"></div>
+    </div>
+    <div class="est-totals" id="est-totals"></div>
+  `;
+  estRenderItems();
+}
+
+function estRenderItems() {
+  const container = document.getElementById('est-line-items');
+  if (!container) return;
+  container.innerHTML = estLineItems.map((item, i) => `
+    <div class="li-row">
+      <input type="text" value="${item.desc||''}" placeholder="Description" onchange="estLineItems[${i}].desc=this.value">
+      <input type="number" value="${item.qty||1}" min="0.5" step="0.5" oninput="estLineItems[${i}].qty=parseFloat(this.value)||1;estRecalc()">
+      <input type="number" value="${item.price||''}" min="0" step="0.01" placeholder="0.00" oninput="estLineItems[${i}].price=parseFloat(this.value)||0;estRecalc()">
+      <button class="li-del" onclick="estRemoveItem(${i})">✕</button>
+    </div>`).join('');
+  estRecalc();
+}
+
+function estAddItem() {
+  estLineItems.push({desc:'', qty:1, price:0});
+  estRenderItems();
+  // Focus new row
+  const inputs = document.querySelectorAll('.li-row input[type=text]');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+
+function estRemoveItem(i) {
+  estLineItems.splice(i, 1);
+  if (!estLineItems.length) estLineItems = [{desc:'', qty:1, price:0}];
+  estRenderItems();
+}
+
+function estRecalc() {
+  const subtotal = estLineItems.reduce((s, item) => s + (item.qty||1)*(item.price||0), 0);
+  const tax = subtotal * (taxRate/100);
+  const total = subtotal + tax;
+  const el = document.getElementById('est-totals');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="est-total-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+    ${taxRate > 0 ? `<div class="est-total-row"><span>Tax (${taxRate}%)</span><span>$${tax.toFixed(2)}</span></div>` : ''}
+    <div class="est-total-row grand"><span>TOTAL</span><span>$${total.toFixed(2)}</span></div>`;
+  return { subtotal, tax, total };
+}
+
+async function saveEstimate() {
+  const title = document.getElementById('est-title')?.value?.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const totals = estRecalc();
+  const btn = document.getElementById('est-save-btn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+
+  const payload = {
+    customer_id: estCustomerId || null,
+    title,
+    notes: document.getElementById('est-notes')?.value || '',
+    valid_until: document.getElementById('est-valid')?.value || null,
+    tax_rate: taxRate,
+    line_items: estLineItems.map(i => ({desc:i.desc, qty:i.qty, unit_price:i.price})),
+    subtotal: totals.subtotal,
+    tax_amount: totals.tax,
+    total: totals.total,
+    status: currentEstId ? undefined : 'draft'
+  };
+
+  let error;
+  if (currentEstId) {
+    delete payload.status;
+    ({ error } = await db.from('estimates').update(payload).eq('id', currentEstId));
+  } else {
+    const { data, error: e } = await db.from('estimates').insert({...payload, status:'draft'}).select().single();
+    error = e;
+    if (data) currentEstId = data.id;
+  }
+
+  btn.textContent = currentEstId ? 'Update Estimate' : 'Save Estimate';
+  btn.disabled = false;
+
+  if (!error) {
+    showToast('✓ Estimate saved', 'success');
+    document.getElementById('est-send-btn').style.display = 'flex';
+    document.getElementById('est-show-btn').style.display = 'flex';
+  } else {
+    showToast('⚠ Error saving');
+    console.error(error);
+  }
+}
+
+async function sendEstimateToCustomer() {
+  if (!currentEstId) { alert('Save the estimate first.'); return; }
+  if (!estCustomerPhone) { alert('No phone number on file for this customer.'); return; }
+  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing/estimate.html?id=' + currentEstId;
+  await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      to: estCustomerPhone,
+      body: `Hi ${estCustomerName.split(' ')[0] || 'there'}! Charlie's Plumbing sent you an estimate. Review and approve here: ${estUrl} — Questions? Call (801) 406-8585.`
+    })
+  }).catch(() => {});
+  await db.from('estimates').update({status:'sent'}).eq('id', currentEstId);
+  showToast('✓ Estimate sent via SMS', 'success');
+}
+
+function showEstimateToCustomer() {
+  // Full screen view to hand phone to customer
+  if (!currentEstId) { alert('Save the estimate first.'); return; }
+  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing/estimate.html?id=' + currentEstId;
+  // Open in same window so customer can approve, tech can go back
+  window.open(estUrl, '_blank');
+}
+
+function closeEstSheet() {
+  document.getElementById('est-sheet').classList.remove('open');
+}
+</script>
+
 </body>
 </html>
