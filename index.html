@@ -399,13 +399,27 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   <div class="panel-body" id="estimate-panel-body"></div>
   <div class="panel-footer" id="estimate-panel-footer">
     <button class="btn btn-primary" onclick="saveEstimate()" id="est-save-btn">Save Estimate</button>
-    <button class="btn btn-green" onclick="sendEstimate()" id="est-send-btn" style="display:none">📤 Send to Customer</button>
-    <button class="btn btn-secondary" onclick="convertEstimateToJob()" id="est-convert-btn" style="display:none">→ Convert to Job</button>
+    <button class="btn btn-green" onclick="sendEstimate()" id="est-send-btn" style="display:none">📤 Send</button>
+    <button class="btn btn-secondary" onclick="approveEstimate()" id="est-approve-btn" style="display:none">✓ Approve</button>
+    <button class="btn btn-secondary" onclick="convertEstimateToJob()" id="est-convert-btn" style="display:none">→ Create Job</button>
     <button class="btn btn-outline" onclick="closePanel('estimate')">Cancel</button>
   </div>
 </div>
 
 <div class="save-toast" id="save-toast">✓ Done</div>
+
+<!-- INVOICE PANEL -->
+<div class="panel-overlay" id="invoice-overlay" onclick="closeInvoicePanel()"></div>
+<div class="slide-panel" id="invoice-panel" style="width:520px">
+  <div class="panel-header">
+    <div class="panel-title" id="invoice-panel-title">Invoice</div>
+    <button class="panel-close" onclick="closeInvoicePanel()">×</button>
+  </div>
+  <div class="panel-body" id="invoice-panel-body"></div>
+  <div class="panel-footer">
+    <button class="btn btn-outline" onclick="closeInvoicePanel()">Close</button>
+  </div>
+</div>
 
 <!-- TRANSCRIPT PANEL -->
 <div class="panel-overlay" id="transcript-overlay" onclick="closePanel('transcript')"></div>
@@ -457,7 +471,7 @@ function loadPage(p){
 
 
 function closePanel(type) {
-  const map={job:['overlay','job-panel'],customer:['customer-overlay','customer-panel'],tech:['tech-overlay','tech-panel'],estimate:['estimate-overlay','estimate-panel'],transcript:['transcript-overlay','transcript-panel']};
+  const map={job:['overlay','job-panel'],customer:['customer-overlay','customer-panel'],tech:['tech-overlay','tech-panel'],estimate:['estimate-overlay','estimate-panel'],transcript:['transcript-overlay','transcript-panel'],invoice:['invoice-overlay','invoice-panel']};
   const[ov,panel]=map[type]||[];
   if(ov)document.getElementById(ov).classList.remove('open');
   if(panel)document.getElementById(panel).classList.remove('open');
@@ -500,6 +514,7 @@ async function openJobPanel(jobId){
       <div class="panel-section-title">Invoice</div>
       <div class="panel-field"><div class="panel-label">Amount ($)</div><input class="panel-input" id="field-amount" type="number" value="${job.invoice_amount||''}"></div>
       <div class="panel-field"><div class="panel-label">Payment</div><select class="panel-select" id="field-paid"><option value="false" ${!job.invoice_paid?'selected':''}>Unpaid</option><option value="true" ${job.invoice_paid?'selected':''}>Paid ✓</option></select></div>
+      <button class="btn btn-secondary" style="width:100%;margin-top:4px" onclick="openInvoicePanel('${job.id}')">📄 View / Generate Invoice</button>
     </div>`;
   document.getElementById('save-btn').textContent='Save Changes';
   document.getElementById('overlay').classList.add('open');
@@ -700,6 +715,7 @@ function openNewEstimatePanel(prefillCustomer=null){
   document.getElementById('estimate-panel-title').textContent='New Estimate';
   document.getElementById('est-save-btn').style.display='';
   document.getElementById('est-send-btn').style.display='none';
+  document.getElementById('est-approve-btn').style.display='none';
   document.getElementById('est-convert-btn').style.display='none';
   renderEstimatePanel(prefillCustomer);
   document.getElementById('estimate-overlay').classList.add('open');
@@ -713,7 +729,8 @@ async function openExistingEstimate(estimateId){
   estimateLineItems=est.line_items||[{desc:'',qty:1,unit_price:0}];
   document.getElementById('estimate-panel-title').textContent='Estimate — '+est.title;
   document.getElementById('est-save-btn').style.display='';
-  document.getElementById('est-send-btn').style.display=est.status==='draft'?'':'none';
+  document.getElementById('est-send-btn').style.display=(est.status==='draft'||est.status==='sent')?'':'none';
+  document.getElementById('est-approve-btn').style.display=(est.status==='draft'||est.status==='sent'||est.status==='viewed')?'':'none';
   document.getElementById('est-convert-btn').style.display=est.status==='approved'?'':'none';
   renderEstimatePanel(est.customers);
   document.getElementById('estimate-overlay').classList.add('open');
@@ -868,11 +885,29 @@ async function sendEstimate(){
 async function convertEstimateToJob(){
   if(!currentEstimate?.id)return;
   const{data:est}=await db.from('estimates').select('*,customers(name)').eq('id',currentEstimate.id).single();
-  closePanel('estimate');
-  openNewJobPanel(est.customer_id,est.customers?.name);
-  // Pre-fill service with estimate title
-  setTimeout(()=>{const f=document.getElementById('field-service');if(f)f.value=est.title;},100);
-  showToast('Fill in job details and click Create Job');
+  if(!est)return;
+  // Create the job directly with estimate data
+  const btn=document.getElementById('est-convert-btn');
+  btn.textContent='Creating...';btn.disabled=true;
+  const{data:job,error}=await db.from('jobs').insert({
+    customer_id:est.customer_id,
+    service_type:est.title,
+    address:est.customers?.address||null,
+    notes:'Converted from estimate. Total: $'+((est.total||0).toLocaleString()),
+    status:'scheduled',
+    source:'estimate',
+    urgency:'normal',
+    estimate_id:est.id,
+    invoice_amount:est.total||null
+  }).select().single();
+  btn.textContent='→ Create Job';btn.disabled=false;
+  if(!error){
+    // Mark estimate as converted
+    await db.from('estimates').update({status:'approved'}).eq('id',est.id);
+    showToast('✓ Job created from estimate');
+    closePanel('estimate');
+    loadPage(currentPage);
+  } else {showToast('⚠ Error creating job');console.error(error);}
 }
 
 // ── LOAD FUNCTIONS ────────────────────────────────────────────────────────────
@@ -1351,6 +1386,200 @@ document.addEventListener('click', function(e) {
     results.style.display = 'none';
   }
 });
+</script>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  FULL JOB LIFECYCLE
+// ═══════════════════════════════════════════════════════
+
+// ── APPROVE ESTIMATE ─────────────────────────────────────────────────────────
+async function approveEstimate() {
+  if (!currentEstimate?.id) return;
+  const btn = document.getElementById('est-approve-btn');
+  btn.textContent = 'Approving...'; btn.disabled = true;
+  const { error } = await db.from('estimates').update({ status: 'approved' }).eq('id', currentEstimate.id);
+  btn.textContent = '✓ Approve'; btn.disabled = false;
+  if (!error) {
+    showToast('✓ Estimate approved');
+    currentEstimate.status = 'approved';
+    document.getElementById('est-approve-btn').style.display = 'none';
+    document.getElementById('est-convert-btn').style.display = '';
+    document.getElementById('est-send-btn').style.display = 'none';
+    loadPage(currentPage);
+  } else { showToast('⚠ Error'); console.error(error); }
+}
+
+// ── JOB PANEL: Add Invoice section when job is complete ──────────────────────
+// Override saveJob to check for complete status and show invoice generator
+const _origSaveJob = saveJob;
+window.saveJob = async function() {
+  await _origSaveJob();
+};
+
+// ── GENERATE INVOICE FROM JOB ────────────────────────────────────────────────
+async function openInvoicePanel(jobId) {
+  // Load job with estimate
+  const { data: job } = await db.from('jobs')
+    .select('*,customers(name,phone,email,address),estimates(*),technicians(name)')
+    .eq('id', jobId).single();
+  if (!job) return;
+
+  // Build invoice panel inside job panel body
+  const est = job.estimates;
+  const lineItems = est?.line_items || [];
+  const subtotal = est?.subtotal || job.invoice_amount || 0;
+  const taxRate = est?.tax_rate || 0;
+  const taxAmt = est?.tax_amount || 0;
+  const total = est?.total || job.invoice_amount || 0;
+
+  const overlay = document.getElementById('invoice-overlay');
+  const panel = document.getElementById('invoice-panel');
+  if (!overlay || !panel) return;
+
+  document.getElementById('invoice-panel-title').textContent = 'Invoice — ' + (job.customers?.name || 'Customer');
+  document.getElementById('invoice-panel-body').innerHTML = buildInvoiceHTML(job, est, lineItems, subtotal, taxRate, taxAmt, total);
+  // Replace pay button placeholder with real DOM button (avoids quote issues)
+  const placeholder = document.getElementById('pay-btn-placeholder');
+  if (placeholder) {
+    const payBtn = document.createElement('button');
+    payBtn.className = 'btn btn-green';
+    payBtn.style.cssText = 'width:100%;padding:12px;font-size:15px';
+    payBtn.textContent = '✓ Mark as Paid';
+    const jId = job.id;
+    const jTotal = lineItems.length > 0 ? total : 0;
+    payBtn.onclick = function() { markJobPaid(jId, jTotal); };
+    placeholder.replaceWith(payBtn);
+  }
+
+  // Wire up payment method select
+  overlay.classList.add('open');
+  panel.classList.add('open');
+}
+
+function buildInvoiceHTML(job, est, lineItems, subtotal, taxRate, taxAmt, total) {
+  const isPaid = job.invoice_paid;
+  const invNum = 'INV-' + (job.id || '').slice(0,8).toUpperCase();
+  const dateStr = new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
+
+  let html = '';
+
+  // Invoice header
+  html += '<div style="background:linear-gradient(135deg,var(--blue),#0d1f35);border-radius:12px;padding:20px;color:white;margin-bottom:16px">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">';
+  html += '<div><div style="font-family:Bebas Neue,sans-serif;font-size:26px;letter-spacing:2px">Invoice</div>';
+  html += '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:2px">' + invNum + ' · ' + dateStr + '</div></div>';
+  html += '<span style="background:' + (isPaid ? 'var(--green-light)' : 'var(--amber-light)') + ';color:' + (isPaid ? 'var(--green)' : 'var(--amber)') + ';font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px">' + (isPaid ? '✓ Paid' : 'Outstanding') + '</span>';
+  html += '</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">';
+  html += '<div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Bill To</div>';
+  html += '<div style="font-size:14px;font-weight:600;color:white">' + (job.customers?.name || '—') + '</div>';
+  html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">' + (job.customers?.phone || '') + '</div>';
+  html += '<div style="font-size:12px;color:rgba(255,255,255,0.6)">' + (job.customers?.address || job.address || '') + '</div></div>';
+  html += '<div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Service</div>';
+  html += '<div style="font-size:14px;font-weight:600;color:white">' + (job.service_type || '—') + '</div>';
+  html += '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">Tech: ' + (job.technicians?.name || 'Unassigned') + '</div></div>';
+  html += '</div></div>';
+
+  // Line items
+  if (lineItems.length > 0) {
+    html += '<div class="panel-section">';
+    html += '<div class="panel-section-title">Line Items</div>';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<thead><tr style="background:var(--off);border-bottom:1px solid var(--border)">';
+    html += '<th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Description</th>';
+    html += '<th style="padding:8px 12px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Qty</th>';
+    html += '<th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Unit Price</th>';
+    html += '<th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Total</th>';
+    html += '</tr></thead><tbody>';
+    lineItems.forEach(function(item) {
+      const lineTotal = ((item.qty || 1) * (item.unit_price || 0)).toFixed(2);
+      html += '<tr style="border-bottom:1px solid var(--off)">';
+      html += '<td style="padding:10px 12px;color:var(--text)">' + (item.desc || '—') + '</td>';
+      html += '<td style="padding:10px 12px;text-align:center;color:var(--muted)">' + (item.qty || 1) + '</td>';
+      html += '<td style="padding:10px 12px;text-align:right;color:var(--muted)">$' + parseFloat(item.unit_price || 0).toFixed(2) + '</td>';
+      html += '<td style="padding:10px 12px;text-align:right;font-weight:600;color:var(--text)">$' + lineTotal + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    html += '</div>';
+  } else {
+    // No line items — show editable amount
+    html += '<div class="panel-section"><div class="panel-section-title">Invoice Amount</div>';
+    html += '<div class="panel-field"><div class="panel-label">Total Amount ($)</div>';
+    html += '<input class="panel-input" id="inv-amount" type="number" value="' + (total || '') + '" placeholder="0.00">';
+    html += '</div></div>';
+  }
+
+  // Totals
+  if (lineItems.length > 0) {
+    html += '<div style="background:var(--off);border-radius:8px;padding:14px 16px;margin-bottom:16px">';
+    html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--muted)">Subtotal</span><span>$' + parseFloat(subtotal).toFixed(2) + '</span></div>';
+    if (taxRate > 0) {
+      html += '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--muted)">Tax (' + taxRate + '%)</span><span>$' + parseFloat(taxAmt).toFixed(2) + '</span></div>';
+    }
+    html += '<div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--blue);padding:8px 0 3px;border-top:1px solid var(--border);margin-top:6px;font-family:Bebas Neue,sans-serif;letter-spacing:1px"><span>TOTAL</span><span>$' + parseFloat(total).toFixed(2) + '</span></div>';
+    html += '</div>';
+  }
+
+  // Payment section
+  if (!isPaid) {
+    html += '<div class="panel-section"><div class="panel-section-title">Mark as Paid</div>';
+    html += '<div class="panel-field"><div class="panel-label">Payment Method</div>';
+    html += '<select class="panel-select" id="inv-pay-method">';
+    html += '<option value="cash">Cash</option>';
+    html += '<option value="check">Check</option>';
+    html += '<option value="card">Credit/Debit Card</option>';
+    html += '<option value="venmo">Venmo</option>';
+    html += '<option value="zelle">Zelle</option>';
+    html += '<option value="other">Other</option>';
+    html += '</select></div>';
+    html += '<div class="panel-field"><div class="panel-label">Payment Notes (optional)</div>';
+    html += '<input class="panel-input" id="inv-pay-notes" placeholder="Check #1234, transaction ID, etc.">';
+    html += '</div>';
+    html += '<div id="pay-btn-placeholder"></div>';
+    html += '</div>';
+  } else {
+    html += '<div style="background:var(--green-light);border-radius:8px;padding:14px 16px;text-align:center">';
+    html += '<div style="font-size:20px;margin-bottom:6px">✅</div>';
+    html += '<div style="font-size:15px;font-weight:700;color:var(--green)">Payment Received</div>';
+    html += '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + (job.notes?.includes('Payment:') ? job.notes.split('Payment:')[1].split('|')[0].trim() : 'Paid') + '</div>';
+    html += '</div>';
+  }
+
+  return html;
+}
+
+async function markJobPaid(jobId, estimatedTotal) {
+  const method = document.getElementById('inv-pay-method')?.value || 'cash';
+  const notes = document.getElementById('inv-pay-notes')?.value || '';
+  const customAmount = document.getElementById('inv-amount') ? parseFloat(document.getElementById('inv-amount').value) || null : null;
+  const finalAmount = customAmount || estimatedTotal || null;
+  const paymentNote = 'Payment: ' + method.charAt(0).toUpperCase() + method.slice(1) + (notes ? ' — ' + notes : '');
+
+  const btn = document.querySelector('#invoice-panel .btn-green');
+  if (btn) { btn.textContent = 'Processing...'; btn.disabled = true; }
+
+  const { error } = await db.from('jobs').update({
+    invoice_paid: true,
+    invoice_amount: finalAmount,
+    status: 'complete',
+    notes: paymentNote
+  }).eq('id', jobId);
+
+  if (!error) {
+    showToast('✓ Payment recorded — job marked complete!');
+    closePanel('invoice');
+    loadPage(currentPage);
+  } else { showToast('⚠ Error'); console.error(error); }
+}
+
+// Close invoice panel
+function closeInvoicePanel() {
+  document.getElementById('invoice-overlay').classList.remove('open');
+  document.getElementById('invoice-panel').classList.remove('open');
+}
 </script>
 
 </body>
