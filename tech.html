@@ -579,7 +579,7 @@ async function saveEstimate() {
 async function sendEstimateToCustomer() {
   if (!currentEstId) { alert('Save the estimate first.'); return; }
   if (!estCustomerPhone) { alert('No phone number on file for this customer.'); return; }
-  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing/estimate.html?id=' + currentEstId;
+  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing-dashboard/estimate.html?id=' + currentEstId;
   await fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -595,7 +595,7 @@ async function sendEstimateToCustomer() {
 function showEstimateToCustomer() {
   // Full screen view to hand phone to customer
   if (!currentEstId) { alert('Save the estimate first.'); return; }
-  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing/estimate.html?id=' + currentEstId;
+  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing-dashboard/estimate.html?id=' + currentEstId;
   // Open in same window so customer can approve, tech can go back
   window.open(estUrl, '_blank');
 }
