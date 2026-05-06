@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Your Estimate — Charlie's Plumbing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:#F0F2F5;min-height:100vh;color:#1C2833;}
+
+.header{background:#1A3A5C;padding:16px 20px;border-bottom:3px solid #C0392B;position:sticky;top:0;z-index:10;}
+.header-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;color:white;letter-spacing:2px;line-height:1;}
+.logo span{color:#E74C3C;}
+.header-phone{font-size:13px;color:rgba(255,255,255,0.7);text-decoration:none;font-weight:600;}
+
+.container{max-width:600px;margin:0 auto;padding:20px 16px 40px;}
+
+/* Status banner */
+.status-banner{border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.status-banner.pending{background:#FEF9E7;border:1px solid #F39C12;}
+.status-banner.approved{background:#EAFAF1;border:1px solid #27AE60;}
+.status-banner.declined{background:#FDEDEC;border:1px solid #E74C3C;}
+.status-icon{font-size:28px;flex-shrink:0;}
+.status-text-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+.status-text-sub{font-size:13px;color:#666;}
+
+/* Estimate card */
+.card{background:white;border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+
+.est-header{background:linear-gradient(135deg,#1A3A5C,#0d1f35);padding:20px;}
+.est-number{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.est-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:white;letter-spacing:1.5px;margin-bottom:12px;}
+.est-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.est-meta-item label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;}
+.est-meta-item span{font-size:13px;color:white;font-weight:600;}
+
+/* Company info */
+.company-strip{background:#F8F9FA;padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #E8EAEC;}
+.company-icon{width:36px;height:36px;background:#C0392B;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.company-name{font-size:13px;font-weight:700;color:#1A3A5C;}
+.company-sub{font-size:11px;color:#888;margin-top:1px;}
+
+/* Line items */
+.line-items{padding:0;}
+.line-items-header{display:grid;grid-template-columns:1fr 60px 80px 80px;gap:8px;padding:10px 20px;background:#F8F9FA;border-bottom:1px solid #E8EAEC;}
+.line-items-header span{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;}
+.line-items-header span:last-child{text-align:right;}
+.line-items-header span:nth-child(2){text-align:center;}
+.line-items-header span:nth-child(3){text-align:right;}
+.line-item{display:grid;grid-template-columns:1fr 60px 80px 80px;gap:8px;padding:12px 20px;border-bottom:1px solid #F0F2F5;align-items:center;}
+.line-item:last-child{border-bottom:none;}
+.item-desc{font-size:14px;font-weight:500;color:#1C2833;}
+.item-qty{font-size:14px;color:#666;text-align:center;}
+.item-price{font-size:14px;color:#666;text-align:right;}
+.item-total{font-size:14px;font-weight:700;color:#1A3A5C;text-align:right;}
+
+/* No line items */
+.simple-amount{padding:20px;display:flex;justify-content:space-between;align-items:center;}
+.simple-amount span{font-size:15px;color:#555;}
+.simple-amount strong{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#1A3A5C;letter-spacing:1px;}
+
+/* Totals */
+.totals{padding:14px 20px;background:#F8F9FA;border-top:2px solid #E8EAEC;}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:14px;}
+.total-row span:first-child{color:#666;}
+.total-row.grand{padding-top:10px;margin-top:6px;border-top:1px solid #E8EAEC;}
+.total-row.grand span:first-child{font-size:16px;font-weight:700;color:#1C2833;}
+.total-row.grand span:last-child{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#1A3A5C;letter-spacing:1px;}
+
+/* Notes */
+.notes-section{padding:16px 20px;}
+.notes-label{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.notes-text{font-size:14px;color:#555;line-height:1.6;}
+
+/* Valid until */
+.valid-strip{padding:10px 20px;background:#FEF9E7;border-top:1px solid #F0E6C0;display:flex;align-items:center;gap:8px;}
+.valid-strip span{font-size:12px;color:#B7770D;font-weight:600;}
+
+/* CTA buttons */
+.cta-section{margin-top:8px;}
+.btn-approve{width:100%;padding:18px;background:#27AE60;color:white;border:none;border-radius:12px;font-size:18px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+.btn-approve:hover{background:#1E8449;transform:translateY(-1px);box-shadow:0 4px 16px rgba(39,174,96,0.3);}
+.btn-approve:active{transform:translateY(0);}
+.btn-decline{width:100%;padding:14px;background:white;color:#C0392B;border:1.5px solid #C0392B;border-radius:12px;font-size:15px;font-weight:600;font-family:'Barlow',sans-serif;cursor:pointer;transition:all 0.2s;}
+.btn-decline:hover{background:#FDEDEC;}
+.btn-call{width:100%;padding:14px;background:#1A3A5C;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* Loading / error */
+.loading{text-align:center;padding:60px 20px;color:#888;}
+.loading-spinner{width:40px;height:40px;border:3px solid #E8EAEC;border-top-color:#1A3A5C;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-state{text-align:center;padding:60px 20px;}
+.error-icon{font-size:48px;margin-bottom:16px;}
+.error-title{font-size:20px;font-weight:700;color:#1C2833;margin-bottom:8px;}
+.error-sub{font-size:14px;color:#888;line-height:1.6;}
+
+/* Approved state */
+.approved-hero{text-align:center;padding:32px 20px;}
+.approved-icon{font-size:56px;margin-bottom:16px;}
+.approved-title{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#27AE60;letter-spacing:2px;margin-bottom:8px;}
+.approved-sub{font-size:15px;color:#555;line-height:1.6;}
+
+/* Modal overlay for confirm */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;padding:28px 24px;width:100%;max-width:600px;}
+.modal-title{font-size:20px;font-weight:700;color:#1C2833;margin-bottom:8px;}
+.modal-sub{font-size:14px;color:#666;line-height:1.6;margin-bottom:24px;}
+.modal-btns{display:flex;flex-direction:column;gap:10px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">Charlie's <span>Plumbing</span></div>
+    <a href="tel:8014068585" class="header-phone">📞 (801) 406-8585</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="content">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div>Loading your estimate...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Approve confirm modal -->
+<div class="modal-overlay" id="approve-modal">
+  <div class="modal-sheet">
+    <div class="modal-title">Approve this estimate?</div>
+    <div class="modal-sub" id="modal-sub-text">By approving, you authorize Charlie's Plumbing to proceed with the work described above.</div>
+    <div class="modal-btns">
+      <button class="btn-approve" id="modal-confirm-btn" onclick="confirmApprove()">✓ Yes, Approve &amp; Schedule</button>
+      <button class="btn-decline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Decline confirm modal -->
+<div class="modal-overlay" id="decline-modal">
+  <div class="modal-sheet">
+    <div class="modal-title">Decline this estimate?</div>
+    <div class="modal-sub">No problem — a technician will follow up with you shortly. You can also call us at (801) 406-8585.</div>
+    <div class="modal-btns">
+      <button class="btn-decline" style="background:#C0392B;color:white;border-color:#C0392B;padding:16px;font-size:16px" onclick="confirmDecline()">Decline Estimate</button>
+      <button class="btn-decline" onclick="closeDeclineModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bfnwuurnzvncfumsnnds.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_8aFV9Gj8xlDChJuXuENLHA_stiqieCr';
+const SMS_URL = 'https://charlies-plumbing-voice-production.up.railway.app/send-sms';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentEstimate = null;
+
+function getEstimateId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
+}
+
+function fmt(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
+}
+
+async function loadEstimate() {
+  const id = getEstimateId();
+  if (!id) {
+    showError('No estimate found', 'This link appears to be invalid. Please contact Charlie\'s Plumbing at (801) 406-8585.');
+    return;
+  }
+
+  const { data: est, error } = await db.from('estimates')
+    .select('*,customers(name,phone,email,address)')
+    .eq('id', id).single();
+
+  if (error || !est) {
+    showError('Estimate not found', 'We couldn\'t find this estimate. It may have expired or the link may be incorrect. Call us at (801) 406-8585.');
+    return;
+  }
+
+  currentEstimate = est;
+  renderEstimate(est);
+}
+
+function renderEstimate(est) {
+  const lineItems = est.line_items || [];
+  const isApproved = est.status === 'approved';
+  const isDeclined = est.status === 'declined';
+  const isPending = !isApproved && !isDeclined;
+  const invNum = 'EST-' + est.id.slice(0,8).toUpperCase();
+  const total = est.total || 0;
+
+  let html = '';
+
+  // Status banner
+  if (isApproved) {
+    html += `<div class="status-banner approved"><div class="status-icon">✅</div><div><div class="status-text-title">Estimate Approved</div><div class="status-text-sub">Thank you! We'll be in touch shortly to confirm your appointment.</div></div></div>`;
+  } else if (isDeclined) {
+    html += `<div class="status-banner declined"><div class="status-icon">❌</div><div><div class="status-text-title">Estimate Declined</div><div class="status-text-sub">No problem. Call us at (801) 406-8585 if you'd like to discuss further.</div></div></div>`;
+  } else {
+    html += `<div class="status-banner pending"><div class="status-icon">📋</div><div><div class="status-text-title">Awaiting Your Approval</div><div class="status-text-sub">Review the estimate below and approve or decline at the bottom.</div></div></div>`;
+  }
+
+  // Main estimate card
+  html += `<div class="card">
+    <div class="est-header">
+      <div class="est-number">${invNum}</div>
+      <div class="est-title">${est.title || 'Estimate'}</div>
+      <div class="est-meta">
+        <div class="est-meta-item"><label>Prepared for</label><span>${est.customers?.name || '—'}</span></div>
+        <div class="est-meta-item"><label>Date</label><span>${fmt(est.created_at)}</span></div>
+        ${est.valid_until ? `<div class="est-meta-item"><label>Valid Until</label><span>${fmt(est.valid_until)}</span></div>` : ''}
+        <div class="est-meta-item"><label>Status</label><span>${est.status?.charAt(0).toUpperCase() + est.status?.slice(1) || 'Draft'}</span></div>
+      </div>
+    </div>
+    <div class="company-strip">
+      <div class="company-icon">🔧</div>
+      <div><div class="company-name">Charlie's Plumbing & Drain Cleaning</div><div class="company-sub">Salt Lake City, Utah · (801) 406-8585</div></div>
+    </div>`;
+
+  // Line items or simple amount
+  if (lineItems.length > 0) {
+    html += `<div class="line-items">
+      <div class="line-items-header"><span>Description</span><span>Qty</span><span>Unit Price</span><span>Total</span></div>`;
+    lineItems.forEach(item => {
+      const lineTotal = ((item.qty || 1) * (item.unit_price || 0)).toFixed(2);
+      html += `<div class="line-item">
+        <div class="item-desc">${item.desc || '—'}</div>
+        <div class="item-qty">${item.qty || 1}</div>
+        <div class="item-price">$${parseFloat(item.unit_price || 0).toFixed(2)}</div>
+        <div class="item-total">$${lineTotal}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    // Totals
+    html += `<div class="totals">
+      <div class="total-row"><span>Subtotal</span><span>$${parseFloat(est.subtotal || 0).toFixed(2)}</span></div>`;
+    if (est.tax_rate > 0) {
+      html += `<div class="total-row"><span>Tax (${est.tax_rate}%)</span><span>$${parseFloat(est.tax_amount || 0).toFixed(2)}</span></div>`;
+    }
+    html += `<div class="total-row grand"><span>Total</span><span>$${parseFloat(total).toFixed(2)}</span></div>
+    </div>`;
+  } else {
+    html += `<div class="simple-amount"><span>Estimated Total</span><strong>$${parseFloat(total).toFixed(2)}</strong></div>`;
+  }
+
+  // Notes
+  if (est.notes) {
+    html += `<div class="notes-section"><div class="notes-label">Notes</div><div class="notes-text">${est.notes}</div></div>`;
+  }
+
+  // Valid until strip
+  if (est.valid_until) {
+    html += `<div class="valid-strip"><span>⏰ This estimate is valid until ${fmt(est.valid_until)}</span></div>`;
+  }
+
+  html += `</div>`; // end card
+
+  // CTA buttons
+  if (isPending) {
+    html += `<div class="cta-section">
+      <button class="btn-approve" onclick="showApproveModal()">✓ Approve Estimate — $${parseFloat(total).toFixed(2)}</button>
+      <button class="btn-decline" onclick="showDeclineModal()">Decline</button>
+      <a href="tel:8014068585"><button class="btn-call">📞 Questions? Call (801) 406-8585</button></a>
+    </div>`;
+  } else if (isApproved) {
+    html += `<div class="card"><div class="approved-hero">
+      <div class="approved-icon">🎉</div>
+      <div class="approved-title">You're All Set!</div>
+      <div class="approved-sub">Your estimate has been approved. Our team will contact you shortly to schedule your service.<br><br>Questions? Call us at (801) 406-8585.</div>
+    </div></div>
+    <a href="tel:8014068585"><button class="btn-call" style="width:100%;margin-top:4px">📞 Call (801) 406-8585</button></a>`;
+  } else {
+    html += `<a href="tel:8014068585"><button class="btn-call" style="width:100%;margin-top:8px">📞 Call Us to Discuss</button></a>`;
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function showError(title, msg) {
+  document.getElementById('content').innerHTML = `
+    <div class="error-state">
+      <div class="error-icon">🔧</div>
+      <div class="error-title">${title}</div>
+      <div class="error-sub">${msg}</div>
+      <a href="tel:8014068585" style="margin-top:20px;display:block"><button class="btn-call" style="width:100%">📞 Call (801) 406-8585</button></a>
+    </div>`;
+}
+
+function showApproveModal() {
+  const total = currentEstimate?.total || 0;
+  document.getElementById('modal-sub-text').textContent = `By approving this $${parseFloat(total).toFixed(2)} estimate, you authorize Charlie's Plumbing to proceed with the work. Our team will contact you to confirm scheduling.`;
+  document.getElementById('approve-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('approve-modal').classList.remove('open'); }
+function showDeclineModal() { document.getElementById('decline-modal').classList.add('open'); }
+function closeDeclineModal() { document.getElementById('decline-modal').classList.remove('open'); }
+
+async function confirmApprove() {
+  const btn = document.getElementById('modal-confirm-btn');
+  btn.textContent = 'Processing...'; btn.disabled = true;
+
+  const { error } = await db.from('estimates')
+    .update({ status: 'approved' })
+    .eq('id', currentEstimate.id);
+
+  if (!error) {
+    // Auto-create job
+    await db.from('jobs').insert({
+      customer_id: currentEstimate.customer_id,
+      service_type: currentEstimate.title,
+      notes: 'Customer approved estimate online. Total: $' + parseFloat(currentEstimate.total || 0).toFixed(2),
+      status: 'scheduled',
+      source: 'estimate_approval',
+      urgency: 'normal',
+      estimate_id: currentEstimate.id,
+      invoice_amount: currentEstimate.total || null
+    });
+
+    // SMS confirmation to customer
+    if (currentEstimate.customers?.phone) {
+      fetch(SMS_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          to: currentEstimate.customers.phone,
+          body: `Hi ${currentEstimate.customers.name?.split(' ')[0] || 'there'}! You've approved the estimate for ${currentEstimate.title} ($${parseFloat(currentEstimate.total || 0).toFixed(2)}). Charlie's Plumbing will contact you shortly to schedule. Questions? Call (801) 406-8585.`
+        })
+      }).catch(() => {});
+    }
+
+    closeModal();
+    currentEstimate.status = 'approved';
+    renderEstimate(currentEstimate);
+  } else {
+    btn.textContent = '✓ Yes, Approve & Schedule';
+    btn.disabled = false;
+    alert('Something went wrong. Please call us at (801) 406-8585.');
+  }
+}
+
+async function confirmDecline() {
+  const { error } = await db.from('estimates')
+    .update({ status: 'declined' })
+    .eq('id', currentEstimate.id);
+
+  if (!error) {
+    closeDeclineModal();
+    currentEstimate.status = 'declined';
+    renderEstimate(currentEstimate);
+  }
+}
+
+// Close modals on overlay click
+document.getElementById('approve-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+document.getElementById('decline-modal').addEventListener('click', function(e) { if (e.target === this) closeDeclineModal(); });
+
+loadEstimate();
+</script>
+</body>
+</html>
