@@ -531,6 +531,9 @@ init();
   </div>
 </div>
 
+<!-- CUSTOMER APPROVAL VIEW (full screen overlay) -->
+<div id="customer-approval-view" style="display:none;position:fixed;inset:0;background:#F0F2F5;z-index:250;overflow-y:auto;font-family:'Barlow',sans-serif;"></div>
+
 <!-- ESTIMATE BUILDER SHEET -->
 <div class="est-sheet" id="est-sheet" onclick="if(event.target===this)closeEstSheet()">
   <div class="est-inner">
@@ -547,8 +550,7 @@ init();
   </div>
 </div>
 
-<!-- CUSTOMER APPROVAL VIEW (full screen, hand phone to customer) -->
-<div id="approval-view" style="display:none;position:fixed;inset:0;background:white;z-index:300;overflow-y:auto;"></div>
+
 
 
 <script>
@@ -573,22 +575,20 @@ async function openEstimateBuilder(jobId, customerName, customerId, customerPhon
   estLineItems = [{desc:'', qty:1, price:0}];
 
   // Check if estimate already exists for this job
-  const { data: existing } = await db.from('estimates')
-    .select('*')
-    .eq('customer_id', customerId)
-    .order('created_at', {ascending: false})
-    .limit(1);
+  const { data: existing } = await db.from('jobs')
+    .select('estimate_id,estimates(*)')
+    .eq('id', jobId).single();
+  const existingEst = existing?.estimates || null;
 
-  if (existing && existing.length > 0) {
-    const est = existing[0];
-    currentEstId = est.id;
-    estLineItems = est.line_items || [{desc:'', qty:1, price:0}];
-    taxRate = est.tax_rate || 0;
+  if (existingEst) {
+    currentEstId = existingEst.id;
+    estLineItems = existingEst.line_items || [{desc:'', qty:1, price:0}];
+    taxRate = existingEst.tax_rate || 0;
     document.getElementById('est-sheet-title').textContent = 'Edit Estimate';
     document.getElementById('est-save-btn').textContent = 'Update Estimate';
     document.getElementById('est-send-btn').style.display = 'flex';
     document.getElementById('est-show-btn').style.display = 'flex';
-    renderEstSheet(est.title || '', est.notes || '', est.valid_until || '');
+    renderEstSheet(existingEst.title || '', existingEst.notes || '', existingEst.valid_until || '');
   } else {
     taxRate = 0;
     document.getElementById('est-sheet-title').textContent = 'Create Estimate';
@@ -695,7 +695,11 @@ async function saveEstimate() {
   } else {
     const { data, error: e } = await db.from('estimates').insert({...payload, status:'draft'}).select().single();
     error = e;
-    if (data) currentEstId = data.id;
+    if (data) {
+      currentEstId = data.id;
+      // Link estimate to job
+      await db.from('jobs').update({ estimate_id: data.id }).eq('id', estJobId);
+    }
   }
 
   btn.textContent = currentEstId ? 'Update Estimate' : 'Save Estimate';
@@ -727,12 +731,112 @@ async function sendEstimateToCustomer() {
   showToast('✓ Estimate sent via SMS', 'success');
 }
 
-function showEstimateToCustomer() {
-  // Full screen view to hand phone to customer
+async function showEstimateToCustomer() {
   if (!currentEstId) { alert('Save the estimate first.'); return; }
-  const estUrl = 'https://hustlemarketingco-oss.github.io/charlies-plumbing-dashboard/estimate.html?id=' + currentEstId;
-  // Open in same window so customer can approve, tech can go back
-  window.open(estUrl, '_blank');
+  // Load estimate and show full-screen inline — no new tab
+  const { data: est } = await db.from('estimates').select('*,customers(name,phone)').eq('id', currentEstId).single();
+  if (!est) return;
+  closeEstSheet();
+  renderCustomerApprovalView(est);
+}
+
+function renderCustomerApprovalView(est) {
+  const view = document.getElementById('customer-approval-view');
+  const lineItems = est.line_items || [];
+  const total = est.total || 0;
+  let html = `
+    <div style="background:#1A3A5C;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #C0392B">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:white;letter-spacing:2px">Charlie's <span style="color:#E74C3C">Plumbing</span></div>
+      <button onclick="closeCustomerView()" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">← Back to Edit</button>
+    </div>
+    <div style="padding:20px;max-width:500px;margin:0 auto">
+      <div style="background:linear-gradient(135deg,#1A3A5C,#0d1f35);border-radius:12px;padding:18px;color:white;margin-bottom:16px">
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">EST-${est.id.slice(0,8).toUpperCase()}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1.5px;margin-bottom:12px">${est.title}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Prepared for</div><div style="font-size:13px;color:white;font-weight:600;margin-top:2px">${est.customers?.name || '—'}</div></div>
+          ${est.valid_until ? `<div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Valid Until</div><div style="font-size:13px;color:white;font-weight:600;margin-top:2px">${new Date(est.valid_until).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>` : ''}
+        </div>
+      </div>`;
+
+  if (lineItems.length > 0) {
+    html += `<div style="background:white;border-radius:12px;overflow:hidden;margin-bottom:16px;border:1px solid #E2E6EA">`;
+    html += `<div style="display:grid;grid-template-columns:1fr 50px 80px 80px;gap:8px;padding:10px 16px;background:#F8F9FA;border-bottom:1px solid #E2E6EA">`;
+    ['Description','Qty','Price','Total'].forEach((h,i) => {
+      html += `<span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;${i>0?'text-align:right':''}">${h}</span>`;
+    });
+    html += `</div>`;
+    lineItems.forEach(item => {
+      const lt = ((item.qty||1)*(item.unit_price||0)).toFixed(2);
+      html += `<div style="display:grid;grid-template-columns:1fr 50px 80px 80px;gap:8px;padding:12px 16px;border-bottom:1px solid #F8F9FA">
+        <span style="font-size:14px;font-weight:500;color:#1C2833">${item.desc||'—'}</span>
+        <span style="font-size:14px;color:#666;text-align:right">${item.qty||1}</span>
+        <span style="font-size:14px;color:#666;text-align:right">$${parseFloat(item.unit_price||0).toFixed(2)}</span>
+        <span style="font-size:14px;font-weight:700;color:#1A3A5C;text-align:right">$${lt}</span>
+      </div>`;
+    });
+    html += `<div style="padding:12px 16px;background:#F8F9FA">
+      ${est.tax_rate > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#666;padding:3px 0"><span>Tax (${est.tax_rate}%)</span><span>$${parseFloat(est.tax_amount||0).toFixed(2)}</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700;color:#1A3A5C;padding-top:8px;border-top:1px solid #E2E6EA;margin-top:4px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px"><span>TOTAL</span><span>$${parseFloat(total).toFixed(2)}</span></div>
+    </div></div>`;
+  } else {
+    html += `<div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:16px;border:1px solid #E2E6EA;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:15px;color:#555">Estimated Total</span>
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#1A3A5C;letter-spacing:1px">$${parseFloat(total).toFixed(2)}</span>
+    </div>`;
+  }
+
+  if (est.notes) {
+    html += `<div style="background:white;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #E2E6EA">
+      <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Notes</div>
+      <div style="font-size:14px;color:#555;line-height:1.6">${est.notes}</div>
+    </div>`;
+  }
+
+  if (est.status !== 'approved') {
+    html += `<button onclick="customerApproveInline('${est.id}','${est.customers?.phone||''}','${est.customers?.name||''}')" style="width:100%;padding:18px;background:#27AE60;color:white;border:none;border-radius:12px;font-size:18px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;cursor:pointer;margin-bottom:10px">✓ Approve Estimate — $${parseFloat(total).toFixed(2)}</button>
+    <button onclick="closeCustomerView()" style="width:100%;padding:14px;background:white;color:#C0392B;border:1.5px solid #C0392B;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif">Decline / Need Changes</button>`;
+  } else {
+    html += `<div style="background:#EAFAF1;border-radius:12px;padding:20px;text-align:center;border:1px solid #27AE60">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-size:18px;font-weight:700;color:#27AE60">Estimate Approved!</div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  view.innerHTML = html;
+  view.style.display = 'block';
+  view.scrollTop = 0;
+}
+
+async function customerApproveInline(estId, phone, name) {
+  const btn = event.target;
+  btn.textContent = 'Approving...'; btn.disabled = true;
+  await db.from('estimates').update({status:'approved'}).eq('id', estId);
+  // Auto-create job from estimate
+  const { data: est } = await db.from('estimates').select('*').eq('id', estId).single();
+  if (est) {
+    await db.from('jobs').update({
+      status: 'scheduled',
+      invoice_amount: est.total || null
+    }).eq('estimate_id', estId);
+  }
+  if (phone) {
+    fetch('https://charlies-plumbing-voice-production.up.railway.app/send-sms', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ to: phone, body: `Hi ${name.split(' ')[0]}! You've approved the estimate. Charlie's Plumbing will proceed with the work. Questions? Call (801) 406-8585.` })
+    }).catch(() => {});
+  }
+  btn.textContent = '✓ Approved!';
+  // Refresh the view to show approved state
+  const { data: updatedEst } = await db.from('estimates').select('*,customers(name,phone)').eq('id', estId).single();
+  if (updatedEst) renderCustomerApprovalView(updatedEst);
+}
+
+function closeCustomerView() {
+  document.getElementById('customer-approval-view').style.display = 'none';
+  // Reopen estimate editor
+  openEstimateBuilder(estJobId, estCustomerName, estCustomerId, estCustomerPhone);
 }
 
 function closeEstSheet() {
